@@ -17,7 +17,6 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 public final class IllusionWalking {
     private static volatile boolean enabled;
     private static volatile long generation;
-    private static boolean previousCutaway;
     private static Pending pending;
     private static int pendingTicks;
     private static int cooldown;
@@ -37,7 +36,6 @@ public final class IllusionWalking {
         if (enabled) { disable(); message("illusion_off"); return; }
         if (!CameraController.active()) { message("illusion_requires_iso"); return; }
         if (!serverSupported()) { message("illusion_singleplayer"); return; }
-        previousCutaway = LocalCutaway.isEnabled();
         LocalCutaway.setEnabled(false);
         enabled = true;
         generation++;
@@ -55,7 +53,7 @@ public final class IllusionWalking {
         pending = null;
         lastSource = lastTarget = null;
         reverseGuard = 0;
-        LocalCutaway.setEnabled(previousCutaway);
+        LocalCutaway.setEnabled(ClientConfig.CUTAWAY_ENABLED.get());
     }
 
     private static void message(String key) {
@@ -80,7 +78,7 @@ public final class IllusionWalking {
     /** Swept test immediately before LocalPlayer.move applies its actual physics displacement. */
     public static boolean beforeMove(Vec3 movement) {
         Minecraft mc = Minecraft.getInstance();
-        if (!enabled || !IsometricControls.controlling()) return false;
+        if (!enabled || !IsometricControls.controlling() || !serverSupported()) return false;
         LocalPlayer player = mc.player;
         if (pending != null) {
             // No drift/fall while waiting for the authoritative packet; momentum resumes at acknowledgement.
@@ -179,7 +177,8 @@ public final class IllusionWalking {
 
     public static boolean serverSupported() {
         var connection = Minecraft.getInstance().getConnection();
-        return connection != null && connection.hasChannel(IllusionNetwork.Request.TYPE);
+        return connection != null && connection.hasChannel(IllusionNetwork.Request.TYPE)
+                && connection.hasChannel(IllusionNetwork.Result.TYPE);
     }
 
     public static void onResult(IllusionNetwork.Result result) {

@@ -11,7 +11,7 @@ public final class StatusHud {
 
     public static void render(RenderGuiEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
-        if (!CameraController.active() || mc.options.hideGui || mc.screen != null || mc.getOverlay() != null) return;
+        if (!CameraController.active() || !ClientConfig.SHOW_HUD.get() || mc.options.hideGui || mc.screen != null || mc.getOverlay() != null) return;
         Component illusion = !IllusionWalking.serverSupported()
                 ? Component.translatable("hud.isometricprojection.singleplayer").withStyle(ChatFormatting.GRAY)
                 : state(IllusionWalking.enabled());

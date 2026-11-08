@@ -20,7 +20,12 @@ public final class LocalCutaway {
 
     private LocalCutaway() { }
 
-    public static boolean toggle() { enabled = !enabled; return enabled; }
+    public static boolean toggle() {
+        enabled = !enabled;
+        ClientConfig.CUTAWAY_ENABLED.set(enabled);
+        ClientConfig.SPEC.save();
+        return enabled;
+    }
     public static boolean isEnabled() { return enabled; }
     public static void setEnabled(boolean value) { enabled = value; }
     public static CutawayVolume snapshot() { return current; }
@@ -42,7 +47,7 @@ public final class LocalCutaway {
         if (enabled && CameraController.active()) {
             BlockPos feet = mc.player.blockPosition();
             next = CutawayVolume.create(true, feet.getX() + .5, mc.player.getEyeY(), feet.getZ() + .5,
-                    CameraController.yaw(), CameraController.PITCH, 4, CameraController.DISTANCE);
+                    CameraController.yaw(), CameraController.PITCH, ClientConfig.CUTAWAY_RADIUS.get(), ClientConfig.CUTAWAY_DEPTH.get());
         }
         CutawayVolume previous = current;
         boolean sameLevel = mc.level == lastLevel;

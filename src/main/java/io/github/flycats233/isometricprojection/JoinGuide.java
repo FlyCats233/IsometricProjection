@@ -29,6 +29,10 @@ public final class JoinGuide {
         Minecraft mc = Minecraft.getInstance();
         if (!pending || mc.player == null || mc.level == null || mc.screen != null || mc.getOverlay() != null) return;
         pending = false;
+        if (!ClientConfig.SHOW_GUIDE.get()) return;
+        mc.gui.getChat().addMessage(Component.translatable(IllusionWalking.serverSupported()
+                ? "message.isometricprojection.server_supported" : "message.isometricprojection.client_only")
+                .withStyle(ChatFormatting.GRAY));
         mc.gui.getChat().addMessage(Component.translatable("message.isometricprojection.guide_controls",
                 key("toggle"), key("left"), key("right"), key("zoom_in"), key("zoom_out"), key("cutaway"))
                 .withStyle(ChatFormatting.GOLD));
