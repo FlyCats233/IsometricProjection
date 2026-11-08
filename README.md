@@ -2,6 +2,13 @@
 
 Minecraft 1.21.1 / NeoForge 21.1.265 客户端等轴正交相机原型。
 
+## 开源协议
+
+本项目原创代码采用 [GNU General Public License v3.0](LICENSE)，许可证标识为 `GPL-3.0-only`。
+Copyright (C) 2026 IsometricProjection contributors. 各贡献者保留其贡献的版权。
+你可以依据 GPL 第 3 版的条款使用、修改和再分发本项目；本项目不提供任何担保。
+Gradle Wrapper 等第三方组件遵循其各自的许可证。
+
 每次进入世界、加载画面关闭后，在本地聊天栏显示一次简易玩法说明，按当前实际绑定的按键显示。
 死亡重生和切换维度不会重复提示；退出再进入会重新提示。
 等轴视角的右下角、快捷栏上方显示 I / G / V 对应功能的实时状态，按实际绑定的按键显示。

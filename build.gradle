@@ -12,6 +12,7 @@ neoForge {
     mods { isometricprojection { sourceSet(sourceSets.main) } }
 }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.named('jar') { from('LICENSE') { into 'META-INF' } }
 
 // ModDevGradle supplies Minecraft libraries to main; reuse them for headless math checks.
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
