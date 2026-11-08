@@ -4,21 +4,21 @@ license="GPL-3.0-only"
 
 [[mods]]
 modId="isometricprojection"
-version="0.4.3"
+version="0.5.1"
 displayName="Isometric Projection"
-description='''Client-side orthographic isometric camera.'''
+description='''Orthographic isometric camera with server-authoritative illusion connections.'''
 
 [[dependencies.isometricprojection]]
 modId="neoforge"
 type="required"
 versionRange="[21.1.265,21.2)"
-side="CLIENT"
+side="BOTH"
 
 [[dependencies.isometricprojection]]
 modId="minecraft"
 type="required"
 versionRange="[1.21.1]"
-side="CLIENT"
+side="BOTH"
 
 [[mixins]]
 config="isometricprojection.mixins.json"

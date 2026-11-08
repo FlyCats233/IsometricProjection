@@ -12,6 +12,18 @@ public final class ControlMathCheck {
     }
 
     public static void main(String[] args) {
+        SmoothZoom zoom = new SmoothZoom(24, 8, 64, 200);
+        zoom.adjust(-2, 0);
+        near(24, zoom.sample(0)); near(23, zoom.sample(100)); near(22, zoom.sample(200));
+        zoom.adjust(-2, 200);
+        double interruptedZoom = zoom.sample(250);
+        zoom.adjust(2, 250);
+        near(interruptedZoom, zoom.sample(250)); near(22, zoom.sample(450));
+        zoom.adjust(-100, 500); near(8, zoom.sample(700));
+        zoom.adjust(-2, 700); near(8, zoom.sample(800));
+        zoom.adjust(100, 800); near(64, zoom.sample(1000));
+        zoom.adjust(2, 1000); near(64, zoom.finish());
+        zoom.adjust(-2, 1100); zoom.adjust(-2, 1150); near(60, zoom.sample(1350));
         // At the classic isometric angle, integer offsets along (1,1,-1) have zero screen displacement.
         for (double angle : new double[]{45, 135, 225, 315, 405}) {
             Matrix4f view = new Matrix4f().rotationX((float)Math.toRadians(35.26439)).rotateY((float)Math.toRadians(angle + 180));

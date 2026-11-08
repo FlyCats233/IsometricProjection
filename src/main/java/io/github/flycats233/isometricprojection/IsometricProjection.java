@@ -8,6 +8,7 @@ import net.neoforged.neoforge.common.NeoForge;
 @Mod(value = "isometricprojection", dist = Dist.CLIENT)
 public final class IsometricProjection {
     public IsometricProjection(IEventBus modBus) {
+        IllusionNetwork.clientReceiver = IllusionWalking::onResult;
         modBus.addListener(CameraController::registerKeys);
         NeoForge.EVENT_BUS.addListener(CameraController::tick);
         NeoForge.EVENT_BUS.addListener(IsometricControls::tick);

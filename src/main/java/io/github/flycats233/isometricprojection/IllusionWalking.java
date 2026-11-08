@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
-/** Single-player prototype: authoritative integrated-server teleports with local prediction. */
+/** Server-authoritative network teleports with local prediction. */
 public final class IllusionWalking {
     private static volatile boolean enabled;
     private static volatile long generation;
@@ -36,7 +36,7 @@ public final class IllusionWalking {
         Minecraft mc = Minecraft.getInstance();
         if (enabled) { disable(); message("illusion_off"); return; }
         if (!CameraController.active()) { message("illusion_requires_iso"); return; }
-        if (mc.getSingleplayerServer() == null) { message("illusion_singleplayer"); return; }
+        if (!serverSupported()) { message("illusion_singleplayer"); return; }
         previousCutaway = LocalCutaway.isEnabled();
         LocalCutaway.setEnabled(false);
         enabled = true;
@@ -65,7 +65,7 @@ public final class IllusionWalking {
 
     public static void tick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
-        if (enabled && (!CameraController.active() || mc.getSingleplayerServer() == null)) disable();
+        if (enabled && (!CameraController.active() || !serverSupported())) disable();
         if (cooldown > 0) cooldown--;
         if (reverseGuard > 0) reverseGuard--;
         if (pending != null && ++pendingTicks > 40) {
@@ -157,8 +157,6 @@ public final class IllusionWalking {
 
     private static void transfer(BlockPos support, BlockPos target, Vec3 to, AABB landing) {
         Minecraft mc = Minecraft.getInstance();
-        var server = mc.getSingleplayerServer();
-        if (server == null) return;
         LocalPlayer player = mc.player;
         Vec3 from = player.position();
         float drag = mc.level.getBlockState(support).getFriction(mc.level, support, player) * .91F;
@@ -176,35 +174,22 @@ public final class IllusionWalking {
         player.resetFallDistance();
         player.setOnGround(true);
         player.setDeltaMovement(Vec3.ZERO);
-        server.execute(() -> {
-            ServerPlayer authoritative = server.getPlayerList().getPlayer(uuid);
-            boolean success = false;
-            if (enabled && generation == id && authoritative != null && authoritative.isAlive()
-                    && !authoritative.isPassenger() && authoritative.level().dimension().equals(dimension)
-                    && authoritative.position().distanceToSqr(from) < 4) {
-                Level level = authoritative.level();
-                if (level.hasChunkAt(target) && fullTop(level, support) && fullTop(level, target)
-                        && level.getWorldBorder().isWithinBounds(target) && level.noCollision(authoritative, landing)) {
-                    authoritative.connection.teleport(to.x, to.y, to.z, yaw, pitch);
-                    authoritative.setDeltaMovement(velocity);
-                    authoritative.resetFallDistance();
-                    authoritative.setOnGround(true);
-                    authoritative.connection.send(new ClientboundSetEntityMotionPacket(authoritative));
-                    success = true;
-                }
-            }
-            boolean accepted = success;
-            mc.execute(() -> {
-                if (pending != request) return;
-                if (!accepted) {
-                    rollback(request);
-                    message("illusion_failed");
-                    pending = null;
-                    cooldown = 10;
-                }
-                // Success is released only when the authoritative teleport packet has been applied.
-            });
-        });
+        mc.getConnection().send(new IllusionNetwork.Request(id, support, target, from, to, velocity, CameraController.yaw()));
+    }
+
+    public static boolean serverSupported() {
+        var connection = Minecraft.getInstance().getConnection();
+        return connection != null && connection.hasChannel(IllusionNetwork.Request.TYPE);
+    }
+
+    public static void onResult(IllusionNetwork.Result result) {
+        Pending request = pending;
+        if (request != null && request.id == result.id() && !result.accepted()) {
+            rollback(request);
+            pending = null;
+            cooldown = 10;
+            message("illusion_failed");
+        }
     }
 
     public static void onTeleportApplied() {

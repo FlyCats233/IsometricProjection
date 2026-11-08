@@ -32,7 +32,7 @@ public abstract class GameRendererMixin {
     @Inject(method = "renderLevel", at = @At("HEAD"))
     private void isometricprojection$begin(CallbackInfo ci) {
         // Use one sampled angle for camera setup, mouse picking and this rendered frame.
-        CameraController.advanceRotation();
+        CameraController.advanceCamera();
         isometricprojection$worldPass = true;
     }
 

@@ -22,6 +22,7 @@ public final class CameraController {
     private static float yaw = 45;
     private static final SmoothRotation ROTATION = new SmoothRotation(45, 250_000_000L);
     private static float span = 24;
+    private static final SmoothZoom ZOOM = new SmoothZoom(24, 8, 64, 200_000_000L);
     public static final float PITCH = 35.26439F;
     public static final float DISTANCE = 32;
 
@@ -38,7 +39,11 @@ public final class CameraController {
     }
     public static float yaw() { return yaw; }
     public static boolean isRotating() { return ROTATION.isMoving(); }
-    public static void advanceRotation() { yaw = (float) ROTATION.sample(System.nanoTime()); }
+    public static void advanceCamera() {
+        long now = System.nanoTime();
+        yaw = (float) ROTATION.sample(now);
+        span = (float) ZOOM.sample(now);
+    }
     public static float span() { return span; }
 
     public static void tick(ClientTickEvent.Post event) {
@@ -47,6 +52,7 @@ public final class CameraController {
             if (enabled) mc.options.setCameraType(previous);
             enabled = false;
             yaw = (float) ROTATION.finish();
+            span = (float) ZOOM.finish();
             drain();
             return;
         }
@@ -54,15 +60,15 @@ public final class CameraController {
         while (TOGGLE.consumeClick()) {
             if (!enabled) previous = mc.options.getCameraType();
             enabled = !enabled;
-            if (!enabled) yaw = (float) ROTATION.finish();
+            if (!enabled) { yaw = (float) ROTATION.finish(); span = (float) ZOOM.finish(); }
             mc.options.setCameraType(enabled ? CameraType.THIRD_PERSON_BACK : previous);
             mc.player.displayClientMessage(Component.translatable(
                     enabled ? "message.isometricprojection.on" : "message.isometricprojection.off"), true);
         }
         while (LEFT.consumeClick()) if (enabled && !IllusionWalking.busy()) ROTATION.rotateBy(-90, System.nanoTime());
         while (RIGHT.consumeClick()) if (enabled && !IllusionWalking.busy()) ROTATION.rotateBy(90, System.nanoTime());
-        while (IN.consumeClick()) if (enabled) span = Math.max(8, span - 2);
-        while (OUT.consumeClick()) if (enabled) span = Math.min(64, span + 2);
+        while (IN.consumeClick()) if (enabled) ZOOM.adjust(-2, System.nanoTime());
+        while (OUT.consumeClick()) if (enabled) ZOOM.adjust(2, System.nanoTime());
         while (CUTAWAY.consumeClick()) if (enabled) {
             if (IllusionWalking.enabled()) {
                 mc.player.displayClientMessage(Component.translatable("message.isometricprojection.illusion_no_cutaway"), true);

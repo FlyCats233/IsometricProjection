@@ -3,6 +3,8 @@ package io.github.flycats233.isometricprojection.mixin;
 import io.github.flycats233.isometricprojection.CameraController;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SectionOcclusionGraph;
+import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.culling.Frustum;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -16,6 +18,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class LevelRendererMixin {
     @Shadow @Final private SectionOcclusionGraph sectionOcclusionGraph;
     @Unique private boolean isometricprojection$previousMode;
+    @Unique private float isometricprojection$previousSpan = Float.NaN;
+    @Shadow private void applyFrustum(Frustum frustum) { throw new AssertionError(); }
+
+    @Inject(method = "setupRender", at = @At("RETURN"))
+    private void isometricprojection$zoomFrustum(Camera camera, Frustum frustum, boolean captured, boolean spectator, CallbackInfo ci) {
+        float span = CameraController.span();
+        if (CameraController.active() && !captured && span != isometricprojection$previousSpan)
+            applyFrustum(new Frustum(frustum));
+        isometricprojection$previousSpan = span;
+    }
 
     @Inject(method = "setupRender", at = @At("HEAD"))
     private void isometricprojection$refreshVisibility(CallbackInfo ci) {
