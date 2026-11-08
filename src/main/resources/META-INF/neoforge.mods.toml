@@ -4,7 +4,7 @@ license="GPL-3.0-only"
 
 [[mods]]
 modId="isometricprojection"
-version="0.5.1"
+version="${mod_version}"
 displayName="Isometric Projection"
 description='''Orthographic isometric camera with server-authoritative illusion connections.'''
 

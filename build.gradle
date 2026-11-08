@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.148'
 }
-version = '0.5.1'
+version = providers.gradleProperty('mod_version').get()
 group = 'io.github.flycats233.isometricprojection'
 base { archivesName = 'isometricprojection' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -13,6 +13,10 @@ neoForge {
 }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 tasks.named('jar') { from('LICENSE') { into 'META-INF' } }
+tasks.named('processResources') {
+    inputs.property('mod_version', project.version)
+    filesMatching('META-INF/neoforge.mods.toml') { expand(mod_version: project.version) }
+}
 
 // ModDevGradle supplies Minecraft libraries to main; reuse them for headless math checks.
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath

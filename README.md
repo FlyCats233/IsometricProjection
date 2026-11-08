@@ -2,6 +2,9 @@
 
 Minecraft 1.21.1 / NeoForge 21.1.265 客户端等轴正交相机原型。
 
+当前候选发布基线：**0.5.1-rc.1**。后续功能与修复的小测试采用 `-beta.N` 编号，
+具体规则见 [版本与发布约定](VERSIONING.md)。版本号统一在 `gradle.properties` 的 `mod_version` 中维护。
+
 ## 开源协议
 
 本项目原创代码采用 [GNU General Public License v3.0](LICENSE)，许可证标识为 `GPL-3.0-only`。
@@ -89,7 +92,7 @@ B 的顶面投影与 A 的东侧顶面边缘接上，但实际不相连；站在
 ## 原型限制与验证
 
 已使用 JDK 21.0.8、Gradle 9.2.1 完成 `build` 编译打包，产物为
-`build/libs/isometricprojection-0.5.1.jar`。尚需实际联机验证，不能视为已完成的可发布版本。
+`build/libs/isometricprojection-0.5.1-rc.1.jar`。这是候选预发布版本，尚需完整联机验收。
 
 0.5.1：放大缩小增加约 0.2 秒缓入缓出，连续/反向按键衔接当前缩放；
 鼠标射线与投影使用相同的逐帧可视范围，缩放时同步刷新视锥，避免放大视野后区块未及时显示。
