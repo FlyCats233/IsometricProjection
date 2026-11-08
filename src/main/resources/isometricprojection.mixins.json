@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "io.github.flycats233.isometricprojection.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["CameraMixin", "GameRendererMixin", "LevelRendererMixin", "FrustumMixin", "MouseHandlerMixin", "SectionCompilerMixin", "RenderChunkRegionMixin", "BlockEntityRenderDispatcherMixin", "ClientPacketListenerMixin", "IllusionMovementMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

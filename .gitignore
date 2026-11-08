@@ -1,0 +1,8 @@
+.gradle/
+build/
+run/
+.idea/
+*.iml
+.gradle-user-home/
+.gradle-local/
+gradle-*-bin.zip

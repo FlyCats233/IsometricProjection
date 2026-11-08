@@ -1,0 +1,24 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="isometricprojection"
+version="0.4.3"
+displayName="Isometric Projection"
+description='''Client-side orthographic isometric camera.'''
+
+[[dependencies.isometricprojection]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.265,21.2)"
+side="CLIENT"
+
+[[dependencies.isometricprojection]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1]"
+side="CLIENT"
+
+[[mixins]]
+config="isometricprojection.mixins.json"
