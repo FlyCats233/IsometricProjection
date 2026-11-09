@@ -1,5 +1,7 @@
 # IsometricProjection
 
+简体中文 · [English](README.en.md)
+
 Minecraft 1.21.1 / NeoForge 21.1.265 客户端等轴正交相机原型。
 
 起始候选发布基线：**0.5.1-rc.1**，当前测试版本：**0.6.0-beta.2**。后续功能与修复的小测试采用 `-beta.N` 编号，
