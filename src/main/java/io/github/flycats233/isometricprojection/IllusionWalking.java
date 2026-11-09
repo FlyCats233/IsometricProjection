@@ -8,7 +8,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -97,7 +96,7 @@ public final class IllusionWalking {
                 movement.x / length, movement.z / length, length);
         if (crossing == null) return false;
         BlockPos adjacent = support.offset(crossing.stepX(), 0, crossing.stepZ());
-        if (fullTop(mc.level, adjacent) || !visibleTop(support)) return false;
+        if (fullTop(mc.level, adjacent)) return false;
         for (int distance = 1; distance <= 16; distance++) {
             for (int sign : new int[]{1, -1}) {
                 IllusionMath.Shift shift = IllusionMath.alignedShift(CameraController.yaw(), CameraController.PITCH, distance * sign);
@@ -106,10 +105,11 @@ public final class IllusionWalking {
                 if (reverseGuard > 0 && support.equals(lastTarget) && target.equals(lastSource)
                         && movement.x * lastMotion.x + movement.z * lastMotion.z >= 0) continue;
                 if (!mc.level.hasChunkAt(target) || !mc.level.getWorldBorder().isWithinBounds(target)
-                        || !fullTop(mc.level, target) || !visibleTop(target)) continue;
+                        || !fullTop(mc.level, target)) continue;
                 Vec3 to = new Vec3(crossing.x() + shift.x(), target.getY() + 1, crossing.z() + shift.z());
                 AABB landing = player.getBoundingBox().move(to.subtract(player.position()));
-                if (!mc.level.noCollision(player, landing)) continue;
+                if (!mc.level.noCollision(player, landing) || !IllusionVisibility.seamVisible(player, support, target,
+                        crossing.stepX(), crossing.stepZ(), CameraController.yaw(), player.getEyePosition())) continue;
                 transfer(support, target, to, landing);
                 return true;
             }
@@ -139,18 +139,6 @@ public final class IllusionWalking {
 
     private static boolean fullTop(BlockGetter level, BlockPos pos) {
         return level.getBlockState(pos).isCollisionShapeFullBlock(level, pos);
-    }
-
-    private static boolean visibleTop(BlockPos support) {
-        Minecraft mc = Minecraft.getInstance();
-        double a = Math.toRadians(CameraController.yaw()), b = Math.toRadians(CameraController.PITCH);
-        Vec3 toward = new Vec3(Math.sin(a) * Math.cos(b), Math.sin(b), -Math.cos(a) * Math.cos(b));
-        Vec3 top = new Vec3(support.getX() + .5, support.getY() + 1.002, support.getZ() + .5);
-        double depth = top.subtract(mc.player.getEyePosition()).dot(toward);
-        if (depth >= CameraController.DISTANCE - .05) return false;
-        Vec3 start = top.add(toward.scale(CameraController.DISTANCE - .05 - depth));
-        return mc.level.clip(new ClipContext(start, top, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, mc.player))
-                .getType() == HitResult.Type.MISS;
     }
 
     private static void transfer(BlockPos support, BlockPos target, Vec3 to, AABB landing) {

@@ -7,7 +7,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import java.util.WeakHashMap;
@@ -83,19 +82,7 @@ public final class IllusionNetwork {
         Vec3 step = p.to.subtract(new Vec3(shift.x(), shift.y(), shift.z())).subtract(p.from);
         if (step.horizontalDistance() > 1 || step.x * edgeX + step.z * edgeZ < -.001) return false;
         AABB box = player.getBoundingBox().move(p.to.subtract(player.position()));
-        return level.noCollision(player, box) && visible(player, p.source, p.cameraYaw, p.from)
-                && visible(player, p.target, p.cameraYaw, p.from);
-    }
-
-    private static boolean visible(ServerPlayer player, BlockPos pos, float yaw, Vec3 feet) {
-        double a = Math.toRadians(yaw), b = Math.toRadians(35.26439);
-        Vec3 toward = new Vec3(Math.sin(a)*Math.cos(b), Math.sin(b), -Math.cos(a)*Math.cos(b));
-        Vec3 top = new Vec3(pos.getX()+.5, pos.getY()+1.002, pos.getZ()+.5);
-        double depth = top.subtract(feet.add(0, player.getEyeHeight(), 0)).dot(toward);
-        if (depth >= 31.95) return false;
-        Vec3 start = top.add(toward.scale(31.95-depth));
-        if (!player.serverLevel().hasChunksAt(BlockPos.containing(start), BlockPos.containing(top))) return false;
-        return player.serverLevel().clip(new ClipContext(start, top, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player))
-                .getType() == HitResult.Type.MISS;
+        return level.noCollision(player, box) && IllusionVisibility.seamVisible(player, p.source, p.target,
+                edgeX, edgeZ, p.cameraYaw, p.from.add(0, player.getEyeHeight(), 0));
     }
 }
