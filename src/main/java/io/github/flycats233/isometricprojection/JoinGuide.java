@@ -31,7 +31,8 @@ public final class JoinGuide {
         pending = false;
         if (!ClientConfig.SHOW_GUIDE.get()) return;
         mc.gui.getChat().addMessage(Component.translatable(IllusionWalking.serverSupported()
-                ? "message.isometricprojection.server_supported" : "message.isometricprojection.client_only")
+                ? "message.isometricprojection.server_supported" : "message.isometricprojection.client_only",
+                key("illusion"))
                 .withStyle(ChatFormatting.GRAY));
         mc.gui.getChat().addMessage(Component.translatable("message.isometricprojection.guide_controls",
                 key("toggle"), key("left"), key("right"), key("zoom_in"), key("zoom_out"), key("cutaway"))

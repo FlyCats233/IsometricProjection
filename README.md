@@ -2,7 +2,7 @@
 
 Minecraft 1.21.1 / NeoForge 21.1.265 客户端等轴正交相机原型。
 
-起始候选发布基线：**0.5.1-rc.1**，当前测试版本：**0.6.0-beta.1**。后续功能与修复的小测试采用 `-beta.N` 编号，
+起始候选发布基线：**0.5.1-rc.1**，当前测试版本：**0.6.0-beta.2**。后续功能与修复的小测试采用 `-beta.N` 编号，
 具体规则见 [版本与发布约定](VERSIONING.md)。版本号统一在 `gradle.properties` 的 `mod_version` 中维护。
 
 ## 开源协议
@@ -82,6 +82,8 @@ B 的顶面投影与 A 的东侧顶面边缘接上，但实际不相连；站在
 
 ## 游戏内配置
 
+模组界面与提示支持英文（美国）和简体中文（中国），随 Minecraft 的语言设置切换。
+
 进入 **Mods（模组）→ Isometric Projection → Config（配置）**，使用 NeoForge 自带界面修改参数。
 配置保存在游戏目录的 `config/isometricprojection-client.toml`，不需要额外安装配置界面模组。
 可调整透视默认开关、开口半径（1–12 格）、相机方向深度（4–32 格）、默认可视高度（8–64 格）、
@@ -99,7 +101,7 @@ G 模式期间透视强制关闭，退出后使用保存的透视偏好。客户
 ## 原型限制与验证
 
 已使用 JDK 21.0.8、Gradle 9.2.1 完成 `build` 编译打包，产物为
-`build/libs/isometricprojection-0.6.0-beta.1.jar`。这是功能测试版本，尚需完整联机验收。
+`build/libs/isometricprojection-0.6.0-beta.2.jar`。这是功能测试版本，尚需完整联机验收。
 
 更新日志从 `0.5.1-rc.1` 起记录，详见 [CHANGELOG.md](CHANGELOG.md)。
 
