@@ -26,5 +26,7 @@ public final class IsometricProjection {
         NeoForge.EVENT_BUS.addListener(JoinGuide::logout);
         NeoForge.EVENT_BUS.addListener(JoinGuide::tick);
         NeoForge.EVENT_BUS.addListener(StatusHud::render);
+        NeoForge.EVENT_BUS.addListener(StatusHud::mouseButton);
+        PonderCommand.register();
     }
 }

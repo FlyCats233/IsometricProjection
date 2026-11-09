@@ -24,6 +24,16 @@ public final class ControlMathCheck {
         zoom.adjust(100, 800); near(64, zoom.sample(1000));
         zoom.adjust(2, 1000); near(64, zoom.finish());
         zoom.adjust(-2, 1100); zoom.adjust(-2, 1150); near(60, zoom.sample(1350));
+        SmoothZoom indoor = new SmoothZoom(24, 8, 64, 200);
+        indoor.adjust(4, 0);
+        indoor.setCovered(true, 100);
+        near(26, indoor.sample(100));
+        indoor.setCovered(true, 200);
+        indoor.adjust(-2, 200);
+        near(8, indoor.sample(300));
+        indoor.setCovered(false, 300);
+        near(18, indoor.sample(400));
+        near(28, indoor.sample(500));
         // At the classic isometric angle, integer offsets along (1,1,-1) have zero screen displacement.
         for (double angle : new double[]{45, 135, 225, 315, 405}) {
             Matrix4f view = new Matrix4f().rotationX((float)Math.toRadians(35.26439)).rotateY((float)Math.toRadians(angle + 180));
@@ -123,6 +133,18 @@ public final class ControlMathCheck {
         rotation.rotateBy(90, 950);
         near(585, rotation.sample(1200));
         near(585, rotation.finish());
+        SmoothRotation fine = new SmoothRotation(350, 200);
+        near(370, fine.moveImmediately(20, 0));
+        near(370, fine.sample(100));
+        fine.alignToNearest(100);
+        near(387.5, fine.sample(200));
+        near(405, fine.sample(300));
+        near(365, fine.moveImmediately(-40, 400));
+        fine.alignToNearest(400);
+        near(405, fine.sample(600));
+        near(355, fine.moveImmediately(-50, 700));
+        fine.alignToNearest(700);
+        near(315, fine.sample(900));
         for (double yaw : new double[]{45, 67.5, 90, 135, 180, 225, 270, 315, 360, 405}) {
                 for (double[] input : new double[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {.3, -.3}}) {
                     var world = ControlMath.worldMovement(yaw, input[0], input[1]);

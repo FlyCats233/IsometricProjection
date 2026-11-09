@@ -29,6 +29,18 @@ public final class SmoothRotation {
         moving = true;
     }
 
+    public double moveImmediately(double degrees, long now) {
+        target = sample(now) + degrees;
+        return finish();
+    }
+
+    public void alignToNearest(long now) {
+        start = sample(now);
+        target = 45 + 90 * Math.round((start - 45) / 90);
+        startedAt = now;
+        moving = start != target;
+    }
+
     public double finish() {
         moving = false;
         return start = target;

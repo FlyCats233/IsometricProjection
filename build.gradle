@@ -5,6 +5,15 @@ plugins {
 version = providers.gradleProperty('mod_version').get()
 group = 'io.github.flycats233.isometricprojection'
 base { archivesName = 'IsometricProjection' }
+repositories {
+    maven {
+        url = 'https://maven.createmod.net'
+        content { includeGroup 'net.createmod.ponder' }
+    }
+}
+dependencies {
+    compileOnly('net.createmod.ponder:ponder-neoforge:1.0.81+mc1.21.1') { transitive = false }
+}
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 neoForge {
     version = '21.1.265'

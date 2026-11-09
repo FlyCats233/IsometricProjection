@@ -6,7 +6,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 /** Client-only preferences, editable from the NeoForge Mods configuration screen. */
 public final class ClientConfig {
     public static final ModConfigSpec SPEC;
-    public static final ModConfigSpec.BooleanValue CUTAWAY_ENABLED, SHOW_HUD, SHOW_GUIDE;
+    public static final ModConfigSpec.BooleanValue CUTAWAY_ENABLED, AUTO_ZOOM_UNDER_COVER, SHOW_HUD, SHOW_GUIDE;
     public static final ModConfigSpec.DoubleValue CUTAWAY_RADIUS, CUTAWAY_DEPTH, DEFAULT_SPAN, ZOOM_STEP;
     public static final ModConfigSpec.IntValue ROTATION_MILLIS, ZOOM_MILLIS;
     static {
@@ -16,6 +16,7 @@ public final class ClientConfig {
         CUTAWAY_DEPTH = b.translation("config.isometricprojection.cutawayDepth").comment("Maximum opening depth towards the camera, in blocks.").defineInRange("cutawayDepth", 32D, 4D, 32D);
         DEFAULT_SPAN = b.translation("config.isometricprojection.defaultSpan").comment("Default vertical visible world size. Applied when configuration is loaded/saved.").defineInRange("defaultSpan", 24D, 8D, 64D);
         ZOOM_STEP = b.translation("config.isometricprojection.zoomStep").defineInRange("zoomStep", 2D, .5D, 8D);
+        AUTO_ZOOM_UNDER_COVER = b.translation("config.isometricprojection.autoZoomUnderCover").define("autoZoomUnderCover", true);
         ROTATION_MILLIS = b.translation("config.isometricprojection.rotationMillis").defineInRange("rotationMillis", 250, 1, 1000);
         ZOOM_MILLIS = b.translation("config.isometricprojection.zoomMillis").defineInRange("zoomMillis", 200, 1, 1000);
         SHOW_HUD = b.translation("config.isometricprojection.showHud").define("showHud", true);

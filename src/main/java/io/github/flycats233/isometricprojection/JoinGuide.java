@@ -4,6 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ClickEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
@@ -31,18 +32,21 @@ public final class JoinGuide {
         pending = false;
         if (!ClientConfig.SHOW_GUIDE.get()) return;
         mc.gui.getChat().addMessage(Component.translatable(IllusionWalking.serverSupported()
-                ? "message.isometricprojection.server_supported" : "message.isometricprojection.client_only",
-                key("illusion"))
+                ? "message.isometricprojection.server_supported" : "message.isometricprojection.client_only")
                 .withStyle(ChatFormatting.GRAY));
         mc.gui.getChat().addMessage(Component.translatable("message.isometricprojection.guide_controls",
-                key("toggle"), key("left"), key("right"), key("zoom_in"), key("zoom_out"), key("cutaway"))
+                key("toggle"), key("left"), key("right"), key("zoom_in"), key("zoom_out"), key("fine_rotation"))
                 .withStyle(ChatFormatting.GOLD));
         mc.gui.getChat().addMessage(Component.translatable("message.isometricprojection.guide_movement",
                 Component.keybind(mc.options.keyUp.getName()), Component.keybind(mc.options.keyLeft.getName()),
-                Component.keybind(mc.options.keyDown.getName()), Component.keybind(mc.options.keyRight.getName()),
-                Component.keybind(mc.options.keyJump.getName())));
-        mc.gui.getChat().addMessage(Component.translatable("message.isometricprojection.guide_illusion", key("illusion"))
+                Component.keybind(mc.options.keyDown.getName()), Component.keybind(mc.options.keyRight.getName())));
+        mc.gui.getChat().addMessage(Component.translatable("message.isometricprojection.guide_illusion")
                 .withStyle(ChatFormatting.AQUA));
+        if (PonderCommand.available()) {
+            mc.gui.getChat().addMessage(Component.translatable("message.isometricprojection.guide_ponder")
+                    .withStyle(style -> style.withColor(ChatFormatting.AQUA)
+                            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/isometricprojection ponder"))));
+        }
     }
 
     private static Component key(String action) { return Component.keybind("key.isometricprojection." + action); }

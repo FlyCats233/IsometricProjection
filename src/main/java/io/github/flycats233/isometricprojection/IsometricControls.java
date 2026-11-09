@@ -12,6 +12,7 @@ import org.lwjgl.glfw.GLFW;
 
 public final class IsometricControls {
     private static boolean cursorWasFree;
+    private static boolean fineCursorCaptured;
 
     private IsometricControls() { }
 
@@ -30,9 +31,18 @@ public final class IsometricControls {
         Minecraft mc = Minecraft.getInstance();
         boolean free = controlling();
         if (free) {
-            // Keep vanilla's logical capture for button handling, but expose the OS pointer.
-            freeCursor();
+            boolean capture = CameraController.fineRotationHeld();
+            if (capture != fineCursorCaptured) {
+                mc.mouseHandler.setIgnoreFirstMove();
+                fineCursorCaptured = capture;
+            }
+            if (capture) {
+                GLFW.glfwSetInputMode(mc.getWindow().getWindow(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+            } else {
+                freeCursor();
+            }
         } else {
+            fineCursorCaptured = false;
             if (cursorWasFree && mc.mouseHandler.isMouseGrabbed() && mc.isWindowActive()) {
                 GLFW.glfwSetInputMode(mc.getWindow().getWindow(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                 mc.mouseHandler.setIgnoreFirstMove();
@@ -41,10 +51,29 @@ public final class IsometricControls {
         cursorWasFree = free;
     }
 
+    public static boolean fineCursorCaptured() { return fineCursorCaptured; }
+
     /** Called instead of vanilla eye-direction picking, before vanilla click handling. */
     public static void pick(float partialTick) {
         Minecraft mc = Minecraft.getInstance();
         if (!controlling()) return;
+        if (fineCursorCaptured || CameraController.fineRotationHeld()) {
+            Vec3 eye = mc.player.getEyePosition(partialTick);
+            mc.hitResult = BlockHitResult.miss(eye, Direction.UP, net.minecraft.core.BlockPos.containing(eye));
+            mc.crosshairPickEntity = null;
+            return;
+        }
+        CursorRay ray = cursorRay(partialTick);
+        Vec3 origin = ray.origin(), end = ray.end(), eye = mc.player.getEyePosition(partialTick);
+        Vec3 direction = end.subtract(origin).normalize();
+        BlockHitResult block = mc.level.clip(LocalCutaway.selectionContext(origin, end, mc.player));
+        pickTarget(mc, origin, end, eye, direction, block);
+    }
+
+    public record CursorRay(Vec3 origin, Vec3 end) {}
+
+    private static CursorRay cursorRay(float partialTick) {
+        Minecraft mc = Minecraft.getInstance();
         double width = Math.max(1, mc.getWindow().getScreenWidth());
         double height = Math.max(1, mc.getWindow().getScreenHeight());
         double aspect = (double) mc.getWindow().getWidth() / Math.max(1, mc.getWindow().getHeight());
@@ -58,14 +87,38 @@ public final class IsometricControls {
         Vec3 origin = eye.add(offset.x(), offset.y(), offset.z()).subtract(direction.scale(CameraController.DISTANCE - .05));
         double depth = Math.max(256, mc.options.getEffectiveRenderDistance() * 32D) - .05;
         Vec3 end = origin.add(direction.scale(depth));
-        BlockHitResult block = mc.level.clip(LocalCutaway.selectionContext(origin, end, mc.player));
+        return new CursorRay(origin, end);
+    }
+
+    public static CursorRay reachableCursorRay(double reach) {
+        Minecraft mc = Minecraft.getInstance();
+        CursorRay ray = cursorRay(1);
+        Vec3 eye = mc.player.getEyePosition();
+        Vec3 direction = ray.end().subtract(ray.origin()).normalize();
+        Vec3 eyeOffset = eye.subtract(ray.origin());
+        double along = eyeOffset.dot(direction);
+        double remaining = reach * reach - eyeOffset.subtract(direction.scale(along)).lengthSqr();
+        if (remaining <= 0) return new CursorRay(eye, eye);
+        double half = Math.sqrt(remaining);
+        double start = Math.max(0, along - half);
+        double end = along + half;
+        BlockHitResult block = mc.level.clip(LocalCutaway.selectionContext(ray.origin(), ray.end(), mc.player));
+        if (block.getType() == HitResult.Type.BLOCK) {
+            end = Math.min(end, block.getLocation().subtract(ray.origin()).dot(direction) + .001);
+        }
+        if (end <= start) return new CursorRay(eye, eye);
+        return new CursorRay(ray.origin().add(direction.scale(start)), ray.origin().add(direction.scale(end)));
+    }
+
+    private static void pickTarget(Minecraft mc, Vec3 origin, Vec3 end, Vec3 eye, Vec3 direction, BlockHitResult block) {
         double blockDistance = block.getType() == HitResult.Type.MISS ? origin.distanceToSqr(end) : origin.distanceToSqr(block.getLocation());
         Vec3 entityEnd = block.getType() == HitResult.Type.MISS ? end : block.getLocation();
         EntityHitResult entity = ProjectileUtil.getEntityHitResult(mc.player, origin, entityEnd,
                 new AABB(origin, entityEnd).inflate(1), e -> !e.isSpectator() && e.isPickable(), blockDistance);
         HitResult pointed = entity == null ? block : entity;
 
-        Vec3 aim = pointed.getType() == HitResult.Type.MISS ? eye.add(offset.x(), offset.y(), offset.z()) : pointed.getLocation();
+        Vec3 aim = pointed.getType() == HitResult.Type.MISS
+                ? origin.add(direction.scale(CameraController.DISTANCE - .05)) : pointed.getLocation();
         double reach = entity == null ? mc.player.blockInteractionRange() : mc.player.entityInteractionRange();
         boolean reachable = pointed.getType() != HitResult.Type.MISS && eye.distanceToSqr(pointed.getLocation()) <= reach * reach;
         if (reachable) {

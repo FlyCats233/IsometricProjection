@@ -4,7 +4,7 @@
 
 Inspired by the game *Monument Valley*, **Isometric Projection** aims to bring gameplay centered on optical illusions to Minecraft. Rotate the isometric view until two separated block tops appear to share an edge, then walk across the apparent connection. Use these connections to build paths and puzzles that depend on your viewing angle.
 
-The current test version, **0.6.0-beta.2**, supports **Minecraft 1.21.1 on NeoForge 21.1.265**.
+The current release, **0.6.0**, supports **Minecraft 1.21.1 on NeoForge 21.1.265**.
 
 ## Installation
 
@@ -16,15 +16,14 @@ Download the mod JAR from [GitHub Releases](https://github.com/FlyCats233/Isomet
 | --- | --- |
 | `I` | Toggle the isometric view |
 | `[` / `]` | Rotate the camera by 90° with a smooth transition |
+| Hold Mouse 4 | Hide the cursor and move the mouse horizontally to rotate freely |
 | `-` / `=` | Smoothly zoom out or in |
 | `W` / `A` / `S` / `D` | Move toward the top, left, bottom, or right of the screen |
-| `V` | Toggle the local cutaway |
-| `G` | Toggle illusion connections when the server supports them |
 | Left / right mouse button | Attack or interact with the target under the cursor within reach |
 
 You can rebind the controls in Minecraft's Controls menu. The player faces the direction of movement and keeps that facing when you release the keys. The free mouse cursor targets blocks and entities. Vanilla reach and obstruction checks still apply.
 
-A short chat guide appears after joining a world. The HUD above the hotbar shows the current bindings and states for the camera, illusion connections, and cutaway.
+A short chat guide appears after joining a world. Click the controls in the bottom-right corner to toggle local cutaway or illusion connections, or open More Settings.
 
 ## Local cutaway
 
@@ -32,7 +31,9 @@ The cutaway hides blocks at or above the player's eye-level block layer when the
 
 ## Illusion connections
 
-With the isometric view active, press `G` to enable illusion connections. Walk toward the edge of a full block whose top appears to meet another full-block top in the current view. The server validates the connection and moves you to the matching edge. The mode temporarily disables the cutaway and pauses connection detection during camera rotation.
+With Ponder installed on the client, run `/isometricprojection ponder` in a world or click the join guide to watch a quartz Penrose triangle demonstrate an illusion crossing.
+
+With the isometric view active, click Illusion Connections in the bottom-right panel. Walk toward the edge of a full block whose top appears to meet another full-block top in the current view. The server validates the connection and moves you to the matching edge. The mode temporarily disables the cutaway and pauses connection detection during camera rotation.
 
 For a quick test, keep the camera at its default 45° angle. Place block A at `(0, 63, 0)` and block B at `(4, 66, -3)`. Stand on A and walk toward its east edge. Leave `(1, 63, 0)` empty and keep the space above both blocks clear. The feature currently requires full-cube collision blocks and a clear landing. It does not trigger while jumping, flying, or riding.
 
@@ -46,7 +47,9 @@ The in-game interface follows Minecraft's language setting and supports English 
 
 Use JDK 21 and run `gradlew.bat build`. The JAR is written to `build/libs/`. The build runs `verifyControls` to check screen-relative movement and mouse-ray calculations. Use `gradlew.bat runClient` or `gradlew.bat runServer` for development.
 
-This is a beta for Minecraft 1.21.1 on NeoForge. Compatibility with other mods, including shader and rendering optimization mods, has yet to be tested. Ports to other Minecraft versions may follow.
+This release supports Minecraft 1.21.1 on NeoForge. Broader compatibility with other mods, including shaders and rendering optimization mods, has yet to be tested. Ports to other Minecraft versions may follow.
+
+With Create installed, Flywheel's `indirect` backend may cause animated parts and moving contraptions on the far side of the player to disappear in isometric view. Run `/flywheel backend flywheel:instancing` on the client to restore their rendering. This workaround has been verified for copper valve handles, mechanical bearing heads, and moving contraptions.
 
 See the [changelog (Chinese)](CHANGELOG.md) and [versioning guide (Chinese)](VERSIONING.md) for release details.
 

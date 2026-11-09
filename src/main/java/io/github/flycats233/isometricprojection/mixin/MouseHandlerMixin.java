@@ -12,11 +12,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MouseHandlerMixin {
     @Inject(method = "turnPlayer", at = @At("HEAD"), cancellable = true)
     private void isometricprojection$freeAim(double delta, CallbackInfo ci) {
-        if (CameraController.active()) ci.cancel();
+        if (CameraController.active()) {
+            if (IsometricControls.fineCursorCaptured()) {
+                CameraController.fineRotate(((MouseHandler) (Object) this).getXVelocity());
+            }
+            ci.cancel();
+        }
     }
 
     @Inject(method = "grabMouse", at = @At("RETURN"))
     private void isometricprojection$showPointer(CallbackInfo ci) {
-        if (IsometricControls.controlling()) IsometricControls.freeCursor();
+        if (IsometricControls.controlling() && !CameraController.fineRotationHeld()) IsometricControls.freeCursor();
     }
 }
