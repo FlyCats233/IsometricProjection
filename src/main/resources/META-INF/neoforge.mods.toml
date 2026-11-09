@@ -6,6 +6,8 @@ license="GPL-3.0-only"
 modId="isometricprojection"
 version="${mod_version}"
 displayName="Isometric Projection"
+logoFile="isometricprojection-logo.png"
+logoBlur=false
 description='''Orthographic isometric camera with server-authoritative illusion connections.'''
 
 [[dependencies.isometricprojection]]
