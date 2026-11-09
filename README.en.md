@@ -1,8 +1,8 @@
-# IsometricProjection
+# Isometric Projection
 
 [简体中文](README.md) · English
 
-IsometricProjection adds an orthographic isometric camera to **Minecraft 1.21.1 on NeoForge 21.1.265**. The current test version is **0.6.0-beta.2**.
+Isometric Projection adds an orthographic isometric camera to **Minecraft 1.21.1 on NeoForge 21.1.265**. The current test version is **0.6.0-beta.2**.
 
 ## Installation
 

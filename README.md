@@ -1,4 +1,4 @@
-# IsometricProjection
+# Isometric Projection（等轴投影）
 
 简体中文 · [English](README.en.md)
 
@@ -103,7 +103,7 @@ G 模式期间透视强制关闭，退出后使用保存的透视偏好。客户
 ## 原型限制与验证
 
 已使用 JDK 21.0.8、Gradle 9.2.1 完成 `build` 编译打包，产物为
-`build/libs/isometricprojection-0.6.0-beta.2.jar`。这是功能测试版本，尚需完整联机验收。
+`build/libs/IsometricProjection-0.6.0-beta.2.jar`。这是功能测试版本，尚需完整联机验收。
 
 更新日志从 `0.5.1-rc.1` 起记录，详见 [CHANGELOG.md](CHANGELOG.md)。
 
