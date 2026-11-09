@@ -2,7 +2,9 @@
 
 简体中文 · [English](README.en.md)
 
-Minecraft 1.21.1 / NeoForge 21.1.265 客户端等轴正交相机原型。
+**Isometric Projection（等轴投影）**的灵感来自游戏《纪念碑谷》。我们希望在 Minecraft 中实现以视错觉连接为核心的玩法：旋转等轴视角，让原本分离的方块顶面在画面中接上，再沿着这条看似连通的路走过去。玩家可以用这种连接搭建依赖观察角度的路线和谜题。
+
+目前支持 Minecraft 1.21.1 / NeoForge 21.1.265。
 
 起始候选发布基线：**0.5.1-rc.1**，当前测试版本：**0.6.0-beta.2**。后续功能与修复的小测试采用 `-beta.N` 编号，
 具体规则见 [版本与发布约定](VERSIONING.md)。版本号统一在 `gradle.properties` 的 `mod_version` 中维护。

@@ -2,7 +2,9 @@
 
 [简体中文](README.md) · English
 
-Isometric Projection adds an orthographic isometric camera to **Minecraft 1.21.1 on NeoForge 21.1.265**. The current test version is **0.6.0-beta.2**.
+Inspired by the game *Monument Valley*, **Isometric Projection** aims to bring gameplay centered on optical illusions to Minecraft. Rotate the isometric view until two separated block tops appear to share an edge, then walk across the apparent connection. Use these connections to build paths and puzzles that depend on your viewing angle.
+
+The current test version, **0.6.0-beta.2**, supports **Minecraft 1.21.1 on NeoForge 21.1.265**.
 
 ## Installation
 
