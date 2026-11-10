@@ -1,4 +1,6 @@
 {
+  "config.isometricprojection.viewTransition": "等轴视角切换动画",
+  "config.isometricprojection.viewTransition.tooltip": "在原视角和等轴视角之间平滑过渡。",
   "hud.isometricprojection.rotation": "视角旋转",
   "hud.isometricprojection.zoom": "视角缩放",
   "hud.isometricprojection.align": "对齐",

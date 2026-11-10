@@ -12,6 +12,17 @@ public final class ControlMathCheck {
     }
 
     public static void main(String[] args) {
+        ViewTransition transition = new ViewTransition();
+        transition.retarget(true, true, 0);
+        near(.5, transition.sample(200_000_000));
+        transition.retarget(false, true, 200_000_000);
+        near(.5, transition.sample(200_000_000));
+        near(0, transition.sample(325_000_000));
+        transition.retarget(true, false, 400_000_000);
+        near(1, transition.sample(400_000_000));
+        Matrix4f vanillaProjection = new Matrix4f().perspective(1, 1.5f, .05f, 256);
+        near(vanillaProjection.m00(), ViewTransition.projection(vanillaProjection, 0, 18, 12, 256, 32).m00());
+        near(1.0 / 18, ViewTransition.projection(vanillaProjection, 1, 18, 12, 256, 32).m00());
         SmoothZoom zoom = new SmoothZoom(24, 8, 64, 200);
         zoom.adjust(-2, 0);
         near(24, zoom.sample(0)); near(23, zoom.sample(100)); near(22, zoom.sample(200));

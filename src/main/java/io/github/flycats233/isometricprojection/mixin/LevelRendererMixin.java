@@ -24,14 +24,14 @@ public abstract class LevelRendererMixin {
     @Inject(method = "setupRender", at = @At("RETURN"))
     private void isometricprojection$zoomFrustum(Camera camera, Frustum frustum, boolean captured, boolean spectator, CallbackInfo ci) {
         float span = CameraController.span();
-        if (CameraController.active() && !captured && span != isometricprojection$previousSpan)
+        if (CameraController.renderingIsometric() && !captured && span != isometricprojection$previousSpan)
             applyFrustum(new Frustum(frustum));
         isometricprojection$previousSpan = span;
     }
 
     @Inject(method = "setupRender", at = @At("HEAD"))
     private void isometricprojection$refreshVisibility(CallbackInfo ci) {
-        boolean active = CameraController.active();
+        boolean active = CameraController.renderingIsometric();
         if (active != isometricprojection$previousMode) {
             sectionOcclusionGraph.invalidate();
             isometricprojection$previousMode = active;
@@ -43,6 +43,6 @@ public abstract class LevelRendererMixin {
     private boolean isometricprojection$orthographicVisibility(boolean smartCull) {
         // Portal traversal from a single eye point is not valid for parallel rays.
         // Keep the existing frustum test, but visit sections through opaque faces.
-        return !CameraController.active() && smartCull;
+        return !CameraController.renderingIsometric() && smartCull;
     }
 }

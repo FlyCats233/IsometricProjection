@@ -21,6 +21,7 @@ public final class IsometricProjection {
         NeoForge.EVENT_BUS.addListener(CameraController::tick);
         NeoForge.EVENT_BUS.addListener(IsometricControls::tick);
         NeoForge.EVENT_BUS.addListener(IsometricControls::movement);
+        NeoForge.EVENT_BUS.addListener(IsometricControls::interaction);
         NeoForge.EVENT_BUS.addListener(IllusionWalking::tick);
         NeoForge.EVENT_BUS.addListener(LocalCutaway::tick);
         NeoForge.EVENT_BUS.addListener(JoinGuide::login);

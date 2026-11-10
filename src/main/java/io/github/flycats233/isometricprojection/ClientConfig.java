@@ -6,11 +6,13 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 /** Client-only preferences, editable from the NeoForge Mods configuration screen. */
 public final class ClientConfig {
     public static final ModConfigSpec SPEC;
+    public static final ModConfigSpec.BooleanValue VIEW_TRANSITION;
     public static final ModConfigSpec.BooleanValue CUTAWAY_ENABLED, AUTO_ZOOM_UNDER_COVER, SHOW_HUD, SHOW_GUIDE;
     public static final ModConfigSpec.DoubleValue CUTAWAY_RADIUS, CUTAWAY_DEPTH, DEFAULT_SPAN, ZOOM_STEP;
     public static final ModConfigSpec.IntValue ROTATION_MILLIS, ZOOM_MILLIS;
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
+        VIEW_TRANSITION = b.translation("config.isometricprojection.viewTransition").define("viewTransition", true);
         CUTAWAY_ENABLED = b.translation("config.isometricprojection.cutawayEnabled").comment("Default/persisted cutaway preference. Illusion connections temporarily disable it.").define("cutawayEnabled", true);
         CUTAWAY_RADIUS = b.translation("config.isometricprojection.cutawayRadius").comment("Opening radius in projected world units.").defineInRange("cutawayRadius", 4D, 1D, 12D);
         CUTAWAY_DEPTH = b.translation("config.isometricprojection.cutawayDepth").comment("Maximum opening depth towards the camera, in blocks.").defineInRange("cutawayDepth", 32D, 4D, 32D);

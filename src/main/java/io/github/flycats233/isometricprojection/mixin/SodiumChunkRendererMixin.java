@@ -15,6 +15,6 @@ abstract class SodiumChunkRendererMixin {
     private boolean isometricprojection$keepCameraFacingTerrain(boolean enabled) {
         // Sodium compares face groups to the player's eye position before submitting them.
         // Parallel projection has no single eye point, so let rasterization cull those faces.
-        return enabled && !CameraController.active();
+        return enabled && !CameraController.renderingIsometric();
     }
 }

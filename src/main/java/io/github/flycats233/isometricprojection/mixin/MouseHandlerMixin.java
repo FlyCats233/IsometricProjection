@@ -39,7 +39,7 @@ public abstract class MouseHandlerMixin {
 
     @Inject(method = "turnPlayer", at = @At("HEAD"), cancellable = true)
     private void isometricprojection$freeAim(double delta, CallbackInfo ci) {
-        if (CameraController.active()) {
+        if (CameraController.renderingIsometric()) {
             if (IsometricControls.fineCursorCaptured()) {
                 CameraController.fineRotate(((MouseHandler) (Object) this).getXVelocity());
             }

@@ -1,4 +1,6 @@
 {
+  "config.isometricprojection.viewTransition": "Animate isometric view transitions",
+  "config.isometricprojection.viewTransition.tooltip": "Smoothly moves the camera between the original and isometric views.",
   "hud.isometricprojection.rotation": "View rotation",
   "hud.isometricprojection.zoom": "View zoom",
   "hud.isometricprojection.align": "Align",

@@ -6,7 +6,7 @@
 
 目前支持 Minecraft 1.21.1 / NeoForge 21.1.265。
 
-起始候选发布基线：**0.5.1-rc.1**，当前正式版本：**0.6.1**。后续功能与修复的小测试采用 `-beta.N` 编号，
+起始候选发布基线：**0.5.1-rc.1**，当前正式版本：**0.7.0**。后续功能与修复的小测试采用 `-beta.N` 编号，
 具体规则见 [版本与发布约定](VERSIONING.md)。版本号统一在 `gradle.properties` 的 `mod_version` 中维护。
 
 ## 开源协议
@@ -104,7 +104,7 @@ B 的顶面投影与 A 的东侧顶面边缘接上，但实际不相连；站在
 ## 原型限制与验证
 
 已使用 JDK 21.0.8、Gradle 9.2.1 完成 `build` 编译打包，产物为
-`build/libs/IsometricProjection-0.6.1.jar`。联机及第三方模组组合的验证范围见下文。
+`build/libs/IsometricProjection-0.7.0.jar`。联机及第三方模组组合的验证范围见下文。
 
 更新日志从 `0.5.1-rc.1` 起记录，详见 [CHANGELOG.md](CHANGELOG.md)。
 

@@ -13,6 +13,6 @@ public abstract class FrustumMixin {
     private void isometricprojection$skipPerspectiveExpansion(int cubeSize, CallbackInfoReturnable<Frustum> cir) {
         // Moving parallel projection backwards cannot widen its side planes.
         // Vanilla's unbounded loop may never contain the camera cube.
-        if (CameraController.active()) cir.setReturnValue((Frustum) (Object) this);
+        if (CameraController.renderingIsometric()) cir.setReturnValue((Frustum) (Object) this);
     }
 }

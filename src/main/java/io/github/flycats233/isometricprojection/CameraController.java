@@ -16,6 +16,9 @@ public final class CameraController {
     private static final KeyMapping FINE_ROTATION = new KeyMapping("key.isometricprojection.fine_rotation",
             InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_4, "key.categories.isometricprojection");
     private static boolean enabled;
+    private static final ViewTransition VIEW = new ViewTransition();
+    private static float viewProgress;
+    private static float renderedYaw;
     private static long finePressedAt;
     private static boolean fineMoved;
     private static CameraType previous = CameraType.FIRST_PERSON;
@@ -41,6 +44,11 @@ public final class CameraController {
         return enabled && mc.level != null && mc.player != null;
     }
     public static float yaw() { return yaw; }
+    public static float viewProgress() { return viewProgress; }
+    public static boolean renderingIsometric() { return active() || viewProgress > 0; }
+    public static boolean transitioning() { return renderingIsometric() && (enabled ? viewProgress < 1 : viewProgress > 0); }
+    public static float renderedYaw() { return renderedYaw; }
+    public static void renderedYaw(float value) { renderedYaw = value; }
     public static boolean isRotating() { return ROTATION.isMoving() || fineRotationHeld() || StatusHud.draggingRotation(); }
     public static boolean fineRotationHeld() {
         return FINE_ROTATION.isDown() && IsometricControls.controlling() && !IllusionWalking.busy();
@@ -60,6 +68,7 @@ public final class CameraController {
     }
     public static void advanceCamera() {
         long now = System.nanoTime();
+        viewProgress = VIEW.sample(now);
         yaw = (float) ROTATION.sample(now);
         span = (float) ZOOM.sample(now);
     }
@@ -78,6 +87,7 @@ public final class CameraController {
         configuredRotationMillis = rotationMillis;
         configuredZoomMillis = zoomMillis;
         configuredDefaultSpan = defaultSpan;
+        if (!ClientConfig.VIEW_TRANSITION.get()) setViewTarget(false);
     }
 
     public static void tick(ClientTickEvent.Post event) {
@@ -85,6 +95,7 @@ public final class CameraController {
         if (mc.level == null || mc.player == null) {
             if (enabled) mc.options.setCameraType(previous);
             enabled = false;
+            setViewTarget(false);
             yaw = (float) ROTATION.finish();
             ZOOM.setCovered(false, System.nanoTime());
             span = (float) ZOOM.finish();
@@ -93,21 +104,33 @@ public final class CameraController {
         }
         if (mc.screen != null) { drain(); return; }
         while (TOGGLE.consumeClick()) {
-            if (!enabled) previous = mc.options.getCameraType();
+            if (!enabled && viewProgress == 0) previous = mc.options.getCameraType();
+            boolean freshEntry = !enabled && viewProgress == 0;
             enabled = !enabled;
-            if (!enabled) {
-                yaw = (float) ROTATION.finish();
-                ZOOM.setCovered(false, System.nanoTime());
+            setViewTarget(ClientConfig.VIEW_TRANSITION.get());
+            if (freshEntry && ClientConfig.VIEW_TRANSITION.get()) {
+                ZOOM.setCovered(ClientConfig.AUTO_ZOOM_UNDER_COVER.get() && hasOverheadCover(mc), System.nanoTime());
                 span = (float) ZOOM.finish();
             }
-            mc.options.setCameraType(enabled ? CameraType.THIRD_PERSON_BACK : previous);
+            if (!enabled) {
+                yaw = (float) ROTATION.moveImmediately(0, System.nanoTime());
+            }
+            mc.options.setCameraType(enabled && viewProgress >= 1 ? CameraType.THIRD_PERSON_BACK : previous);
             if (!enabled) IsometricControls.restoreVanillaCursor();
             mc.player.displayClientMessage(Component.translatable(
                     enabled ? "message.isometricprojection.on" : "message.isometricprojection.off"), true);
         }
         updateFineButton();
-        ZOOM.setCovered(enabled && ClientConfig.AUTO_ZOOM_UNDER_COVER.get() && hasOverheadCover(mc), System.nanoTime());
-        if (enabled) mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+        if (enabled || viewProgress == 0) {
+            ZOOM.setCovered(enabled && ClientConfig.AUTO_ZOOM_UNDER_COVER.get() && hasOverheadCover(mc), System.nanoTime());
+        }
+        if (enabled) mc.options.setCameraType(viewProgress >= 1 ? CameraType.THIRD_PERSON_BACK : previous);
+    }
+
+    private static void setViewTarget(boolean animate) {
+        long now = System.nanoTime();
+        VIEW.retarget(enabled, animate, now);
+        viewProgress = VIEW.sample(now);
     }
 
     private static void updateFineButton() {

@@ -9,6 +9,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
 import org.lwjgl.glfw.GLFW;
 
 public final class IsometricControls {
@@ -19,7 +20,7 @@ public final class IsometricControls {
 
     public static boolean controlling() {
         Minecraft mc = Minecraft.getInstance();
-        return CameraController.active() && mc.screen == null && mc.getOverlay() == null
+        return CameraController.active() && !CameraController.transitioning() && mc.screen == null && mc.getOverlay() == null
                 && mc.isWindowActive() && mc.getCameraEntity() == mc.player && mc.player.isAlive();
     }
 
@@ -65,6 +66,12 @@ public final class IsometricControls {
     }
 
     public static boolean fineCursorCaptured() { return fineCursorCaptured; }
+
+    public static void interaction(InputEvent.InteractionKeyMappingTriggered event) {
+        if (!CameraController.transitioning()) return;
+        event.setSwingHand(false);
+        event.setCanceled(true);
+    }
 
     /** Called instead of vanilla eye-direction picking, before vanilla click handling. */
     public static void pick(float partialTick) {
@@ -153,8 +160,16 @@ public final class IsometricControls {
 
     public static void movement(MovementInputUpdateEvent event) {
         Minecraft mc = Minecraft.getInstance();
-        if (event.getEntity() != mc.player || !CameraController.active()) return;
+        if (event.getEntity() != mc.player || !CameraController.renderingIsometric()) return;
         Input input = event.getInput();
+        if (CameraController.transitioning() && mc.screen == null && mc.isWindowActive()) {
+            var world = ControlMath.worldMovement(CameraController.renderedYaw(), input.forwardImpulse, input.leftImpulse);
+            var forward = ControlMath.worldMovement(mc.player.getYRot(), 1, 0);
+            var left = ControlMath.worldMovement(mc.player.getYRot(), 0, 1);
+            input.forwardImpulse = (float) (world.x() * forward.x() + world.z() * forward.z());
+            input.leftImpulse = (float) (world.x() * left.x() + world.z() * left.z());
+            return;
+        }
         if (!controlling()) {
             input.forwardImpulse = input.leftImpulse = 0;
             return;
