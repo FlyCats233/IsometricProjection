@@ -1,6 +1,12 @@
 {
+  "hud.isometricprojection.rotation": "视角旋转",
+  "hud.isometricprojection.zoom": "视角缩放",
+  "hud.isometricprojection.align": "对齐",
+  "hud.isometricprojection.reset_zoom": "重置",
+  "hud.isometricprojection.auto_zoom": "头顶遮挡自动放大",
+  "hud.isometricprojection.rotation_hint": "拖动滑块自由旋转，按住 Ctrl 拖动可对齐。单击 %s 对齐，按住并移动鼠标可旋转。",
+  "hud.isometricprojection.zoom_hint": "拖动滑块，或按住 Ctrl 滚动鼠标滚轮来缩放。点击重置恢复默认缩放。",
   "key.isometricprojection.fine_rotation": "按住精细旋转等轴视角",
-  "hud.isometricprojection.reset_view": "视角复位",
   "message.isometricprojection.ponder_missing": "请在客户端安装 Ponder（思索），以观看彭罗斯三角教程。",
   "message.isometricprojection.guide_ponder": "点击观看彭罗斯三角教程（/isometricprojection ponder）。",
   "isometricprojection.ponder.penrose_crossing.header": "跨越彭罗斯三角",
@@ -41,14 +47,10 @@
   "hud.isometricprojection.off": "关闭",
   "hud.isometricprojection.locked_off": "关闭（连接模式）",
   "hud.isometricprojection.singleplayer": "服务端未适配",
-  "message.isometricprojection.guide_controls": "[等轴投影] %s 切换视角，%s / %s 旋转，%s / %s 缩放。按住 %s 并左右移动鼠标，可自由旋转。",
+  "message.isometricprojection.guide_controls": "[等轴投影] %s 切换视角。按住 %s 旋转，单击对齐。缩放和设置在右下角。",
   "message.isometricprojection.guide_movement": "%s / %s / %s / %s 按画面方向移动。鼠标指向目标后，左键攻击或挖掘，右键交互或使用。",
-  "message.isometricprojection.guide_illusion": "右下角可切换局部透视和视错觉连接、复位视角或打开更多配置。开启视错觉连接后，走向看似相接的完整方块顶面边缘即可跨越。",
+  "message.isometricprojection.guide_illusion": "在右下角开启视错觉连接，即可跨越看似共边的完整方块顶面。多人游戏需要服务端支持。",
   "key.isometricprojection.toggle": "切换等轴视角",
-  "key.isometricprojection.left": "向左旋转视角",
-  "key.isometricprojection.right": "向右旋转视角",
-  "key.isometricprojection.zoom_in": "放大等轴视角",
-  "key.isometricprojection.zoom_out": "缩小等轴视角",
 
 
 

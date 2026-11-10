@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -24,7 +25,19 @@ public final class IsometricControls {
 
     public static void freeCursor() {
         Minecraft mc = Minecraft.getInstance();
-        GLFW.glfwSetInputMode(mc.getWindow().getWindow(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        GLFW.glfwSetInputMode(mc.getWindow().getWindow(), GLFW.GLFW_CURSOR,
+                ProjectileAim.active() && !mc.options.hideGui ? GLFW.GLFW_CURSOR_HIDDEN : GLFW.GLFW_CURSOR_NORMAL);
+    }
+
+    static void restoreVanillaCursor() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.screen != null || mc.getOverlay() != null || !mc.isWindowActive()) return;
+        // Closing a screen can leave either Minecraft's grab or the GLFW cursor mode released.
+        mc.mouseHandler.grabMouse();
+        GLFW.glfwSetInputMode(mc.getWindow().getWindow(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+        mc.mouseHandler.setIgnoreFirstMove();
+        cursorWasFree = false;
+        fineCursorCaptured = false;
     }
 
     public static void tick(ClientTickEvent.Post event) {
@@ -72,7 +85,13 @@ public final class IsometricControls {
 
     public record CursorRay(Vec3 origin, Vec3 end) {}
 
-    private static CursorRay cursorRay(float partialTick) {
+    public static BlockHitResult cursorBlockHit(ClipContext.Fluid fluids) {
+        Minecraft mc = Minecraft.getInstance();
+        CursorRay ray = cursorRay(mc.getTimer().getGameTimeDeltaPartialTick(true));
+        return mc.level.clip(LocalCutaway.selectionContext(ray.origin(), ray.end(), mc.player, fluids));
+    }
+
+    static CursorRay cursorRay(float partialTick) {
         Minecraft mc = Minecraft.getInstance();
         double width = Math.max(1, mc.getWindow().getScreenWidth());
         double height = Math.max(1, mc.getWindow().getScreenHeight());
@@ -144,6 +163,9 @@ public final class IsometricControls {
         double speed = Math.hypot(world.x(), world.z());
         if (speed > 1.0E-5) {
             float desiredYaw = (float) ControlMath.facingYaw(world);
+            if (mc.player.getVehicle() instanceof Boat boat && boat.getControllingPassenger() == mc.player) {
+                boat.setYRot(boat.getYRot() + net.minecraft.util.Mth.wrapDegrees(desiredYaw - boat.getYRot()));
+            }
             float yaw = mc.player.getYRot() + net.minecraft.util.Mth.wrapDegrees(desiredYaw - mc.player.getYRot());
             mc.player.setYRot(yaw);
             mc.player.setYHeadRot(yaw);

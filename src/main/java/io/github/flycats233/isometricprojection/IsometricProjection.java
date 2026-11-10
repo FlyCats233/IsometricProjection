@@ -7,13 +7,14 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.minecraft.client.gui.screens.Screen;
 import net.neoforged.neoforge.common.NeoForge;
 
 @Mod(value = "isometricprojection", dist = Dist.CLIENT)
 public final class IsometricProjection {
     public IsometricProjection(IEventBus modBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
-        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        container.registerExtensionPoint(IConfigScreenFactory.class, IsometricProjection::settingsScreen);
         modBus.addListener(ClientConfig::changed);
         IllusionNetwork.clientReceiver = IllusionWalking::onResult;
         modBus.addListener(CameraController::registerKeys);
@@ -26,7 +27,14 @@ public final class IsometricProjection {
         NeoForge.EVENT_BUS.addListener(JoinGuide::logout);
         NeoForge.EVENT_BUS.addListener(JoinGuide::tick);
         NeoForge.EVENT_BUS.addListener(StatusHud::render);
+        NeoForge.EVENT_BUS.addListener(ProjectileAim::render);
         NeoForge.EVENT_BUS.addListener(StatusHud::mouseButton);
+        NeoForge.EVENT_BUS.addListener(StatusHud::mouseScroll);
         PonderCommand.register();
+    }
+
+    static Screen settingsScreen(ModContainer container, Screen parent) {
+        return new ConfigurationScreen(container, parent,
+                (context, key, original) -> key.equals("autoZoomUnderCover") ? null : original);
     }
 }

@@ -16,7 +16,7 @@ public final class ClientConfig {
         CUTAWAY_DEPTH = b.translation("config.isometricprojection.cutawayDepth").comment("Maximum opening depth towards the camera, in blocks.").defineInRange("cutawayDepth", 32D, 4D, 32D);
         DEFAULT_SPAN = b.translation("config.isometricprojection.defaultSpan").comment("Default vertical visible world size. Applied when configuration is loaded/saved.").defineInRange("defaultSpan", 24D, 8D, 64D);
         ZOOM_STEP = b.translation("config.isometricprojection.zoomStep").defineInRange("zoomStep", 2D, .5D, 8D);
-        AUTO_ZOOM_UNDER_COVER = b.translation("config.isometricprojection.autoZoomUnderCover").define("autoZoomUnderCover", true);
+        AUTO_ZOOM_UNDER_COVER = b.translation("config.isometricprojection.autoZoomUnderCover").define("autoZoomUnderCover", false);
         ROTATION_MILLIS = b.translation("config.isometricprojection.rotationMillis").defineInRange("rotationMillis", 250, 1, 1000);
         ZOOM_MILLIS = b.translation("config.isometricprojection.zoomMillis").defineInRange("zoomMillis", 200, 1, 1000);
         SHOW_HUD = b.translation("config.isometricprojection.showHud").define("showHud", true);

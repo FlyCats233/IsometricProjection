@@ -8,6 +8,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -76,12 +77,22 @@ public final class LocalCutaway {
 
     /** Only the camera's selection ray skips cut geometry; physics and eye-to-target checks do not. */
     public static ClipContext selectionContext(Vec3 from, Vec3 to, Entity player) {
+        return selectionContext(from, to, player, ClipContext.Fluid.NONE);
+    }
+
+    public static ClipContext selectionContext(Vec3 from, Vec3 to, Entity player, ClipContext.Fluid fluids) {
         CutawayVolume volume = current;
-        return new ClipContext(from, to, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player) {
+        return new ClipContext(from, to, ClipContext.Block.OUTLINE, fluids, player) {
             @Override
             public VoxelShape getBlockShape(BlockState state, BlockGetter level, BlockPos pos) {
                 return volume.hides(pos.getX(), pos.getY(), pos.getZ())
                         ? Shapes.empty() : super.getBlockShape(state, level, pos);
+            }
+
+            @Override
+            public VoxelShape getFluidShape(FluidState state, BlockGetter level, BlockPos pos) {
+                return volume.hides(pos.getX(), pos.getY(), pos.getZ())
+                        ? Shapes.empty() : super.getFluidShape(state, level, pos);
             }
         };
     }

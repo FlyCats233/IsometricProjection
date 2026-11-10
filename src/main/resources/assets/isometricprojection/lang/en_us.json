@@ -1,6 +1,12 @@
 {
+  "hud.isometricprojection.rotation": "View rotation",
+  "hud.isometricprojection.zoom": "View zoom",
+  "hud.isometricprojection.align": "Align",
+  "hud.isometricprojection.reset_zoom": "Reset",
+  "hud.isometricprojection.auto_zoom": "Auto-zoom under cover",
+  "hud.isometricprojection.rotation_hint": "Drag to rotate freely. Hold Ctrl while dragging to align. Tap %s to align, or hold it and move the mouse to rotate.",
+  "hud.isometricprojection.zoom_hint": "Drag to zoom, or hold Ctrl and scroll. Click Reset to restore your default zoom.",
   "key.isometricprojection.fine_rotation": "Hold to rotate the isometric camera",
-  "hud.isometricprojection.reset_view": "Reset view angle",
   "message.isometricprojection.ponder_missing": "Install Ponder on your client to watch the Penrose triangle tutorial.",
   "message.isometricprojection.guide_ponder": "Click to watch the Penrose triangle tutorial (/isometricprojection ponder).",
   "isometricprojection.ponder.penrose_crossing.header": "Crossing the Penrose triangle",
@@ -41,14 +47,10 @@
   "hud.isometricprojection.off": "OFF",
   "hud.isometricprojection.locked_off": "OFF (illusion mode)",
   "hud.isometricprojection.singleplayer": "Server unsupported",
-  "message.isometricprojection.guide_controls": "[Isometric Projection] %s toggles the view. %s / %s rotate and %s / %s zoom. Hold %s and move the mouse sideways to rotate freely.",
+  "message.isometricprojection.guide_controls": "[Isometric Projection] %s toggles the view. Hold %s to rotate, or tap it to align. Use the bottom-right controls for zoom and settings.",
   "message.isometricprojection.guide_movement": "%s / %s / %s / %s move relative to the screen. Aim with the cursor and click to attack, mine, or interact.",
-  "message.isometricprojection.guide_illusion": "Bottom-right controls: toggle cutaway or illusion connections, reset the view angle, or open More Settings. With illusion connections on, walk across full-block top edges that appear to meet.",
+  "message.isometricprojection.guide_illusion": "Enable illusion connections in the bottom-right panel, then walk across full-block tops that appear to share an edge. Multiplayer requires server support.",
   "key.isometricprojection.toggle": "Toggle isometric view",
-  "key.isometricprojection.left": "Rotate view left",
-  "key.isometricprojection.right": "Rotate view right",
-  "key.isometricprojection.zoom_in": "Zoom in",
-  "key.isometricprojection.zoom_out": "Zoom out",
 
 
 

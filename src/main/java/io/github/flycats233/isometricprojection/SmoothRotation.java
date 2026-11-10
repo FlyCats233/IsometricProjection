@@ -41,6 +41,11 @@ public final class SmoothRotation {
         moving = start != target;
     }
 
+    public void rotateTo(double degrees, long now) {
+        double delta = net.minecraft.util.Mth.wrapDegrees(degrees - target);
+        if (delta != 0) rotateBy(delta, now);
+    }
+
     public double finish() {
         moving = false;
         return start = target;

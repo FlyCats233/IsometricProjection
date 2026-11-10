@@ -4,7 +4,7 @@
 
 Inspired by the game *Monument Valley*, **Isometric Projection** aims to bring gameplay centered on optical illusions to Minecraft. Rotate the isometric view until two separated block tops appear to share an edge, then walk across the apparent connection. Use these connections to build paths and puzzles that depend on your viewing angle.
 
-The current release, **0.6.0**, supports **Minecraft 1.21.1 on NeoForge 21.1.265**.
+The current release, **0.6.1**, supports **Minecraft 1.21.1 on NeoForge 21.1.265**.
 
 ## Installation
 
@@ -15,15 +15,13 @@ Download the mod JAR from [GitHub Releases](https://github.com/FlyCats233/Isomet
 | Default binding | Action |
 | --- | --- |
 | `I` | Toggle the isometric view |
-| `[` / `]` | Rotate the camera by 90° with a smooth transition |
-| Hold Mouse 4 | Hide the cursor and move the mouse horizontally to rotate freely |
-| `-` / `=` | Smoothly zoom out or in |
+| Hold Mouse 4 | Hide the cursor and move the mouse horizontally to rotate freely. Tap to align |
 | `W` / `A` / `S` / `D` | Move toward the top, left, bottom, or right of the screen |
 | Left / right mouse button | Attack or interact with the target under the cursor within reach |
 
 You can rebind the controls in Minecraft's Controls menu. The player faces the direction of movement and keeps that facing when you release the keys. The free mouse cursor targets blocks and entities. Vanilla reach and obstruction checks still apply.
 
-A short chat guide appears after joining a world. Click the controls in the bottom-right corner to toggle local cutaway or illusion connections, or open More Settings.
+A short chat guide appears after joining a world. Use the bottom-right sliders to rotate and zoom. Hold Ctrl while dragging the rotation slider to align, or hold Ctrl and scroll to zoom. The panel also provides cutaway, illusion connections, overhead auto-zoom, and More Settings.
 
 ## Local cutaway
 

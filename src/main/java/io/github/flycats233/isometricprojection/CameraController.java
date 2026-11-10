@@ -13,13 +13,11 @@ import org.lwjgl.glfw.GLFW;
 
 public final class CameraController {
     private static final KeyMapping TOGGLE = key("toggle", GLFW.GLFW_KEY_I);
-    private static final KeyMapping LEFT = key("left", GLFW.GLFW_KEY_LEFT_BRACKET);
-    private static final KeyMapping RIGHT = key("right", GLFW.GLFW_KEY_RIGHT_BRACKET);
-    private static final KeyMapping IN = key("zoom_in", GLFW.GLFW_KEY_EQUAL);
-    private static final KeyMapping OUT = key("zoom_out", GLFW.GLFW_KEY_MINUS);
     private static final KeyMapping FINE_ROTATION = new KeyMapping("key.isometricprojection.fine_rotation",
             InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_4, "key.categories.isometricprojection");
     private static boolean enabled;
+    private static long finePressedAt;
+    private static boolean fineMoved;
     private static CameraType previous = CameraType.FIRST_PERSON;
     private static float yaw = 45;
     private static SmoothRotation ROTATION = new SmoothRotation(45, 250_000_000L);
@@ -36,20 +34,23 @@ public final class CameraController {
                 code, "key.categories.isometricprojection");
     }
     public static void registerKeys(RegisterKeyMappingsEvent event) {
-        for (KeyMapping key : new KeyMapping[]{TOGGLE, LEFT, RIGHT, IN, OUT, FINE_ROTATION}) event.register(key);
+        for (KeyMapping key : new KeyMapping[]{TOGGLE, FINE_ROTATION}) event.register(key);
     }
     public static boolean active() {
         Minecraft mc = Minecraft.getInstance();
         return enabled && mc.level != null && mc.player != null;
     }
     public static float yaw() { return yaw; }
-    public static boolean isRotating() { return ROTATION.isMoving() || fineRotationHeld(); }
+    public static boolean isRotating() { return ROTATION.isMoving() || fineRotationHeld() || StatusHud.draggingRotation(); }
     public static boolean fineRotationHeld() {
         return FINE_ROTATION.isDown() && IsometricControls.controlling() && !IllusionWalking.busy();
     }
 
+    static Component fineRotationKey() { return FINE_ROTATION.getTranslatedKeyMessage(); }
+
     public static void fineRotate(double mouseDelta) {
         if (mouseDelta != 0 && fineRotationHeld()) {
+            fineMoved = true;
             yaw = (float) ROTATION.moveImmediately(mouseDelta * .15, System.nanoTime());
         }
     }
@@ -100,16 +101,65 @@ public final class CameraController {
                 span = (float) ZOOM.finish();
             }
             mc.options.setCameraType(enabled ? CameraType.THIRD_PERSON_BACK : previous);
+            if (!enabled) IsometricControls.restoreVanillaCursor();
             mc.player.displayClientMessage(Component.translatable(
                     enabled ? "message.isometricprojection.on" : "message.isometricprojection.off"), true);
         }
-        while (LEFT.consumeClick()) if (enabled && !fineRotationHeld() && !IllusionWalking.busy()) ROTATION.rotateBy(-90, System.nanoTime());
-        while (RIGHT.consumeClick()) if (enabled && !fineRotationHeld() && !IllusionWalking.busy()) ROTATION.rotateBy(90, System.nanoTime());
-        while (FINE_ROTATION.consumeClick()) { }
+        updateFineButton();
         ZOOM.setCovered(enabled && ClientConfig.AUTO_ZOOM_UNDER_COVER.get() && hasOverheadCover(mc), System.nanoTime());
-        while (IN.consumeClick()) if (enabled) ZOOM.adjust(-ClientConfig.ZOOM_STEP.get(), System.nanoTime());
-        while (OUT.consumeClick()) if (enabled) ZOOM.adjust(ClientConfig.ZOOM_STEP.get(), System.nanoTime());
         if (enabled) mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+    }
+
+    private static void updateFineButton() {
+        long now = System.nanoTime();
+        boolean pressed = false;
+        while (FINE_ROTATION.consumeClick()) pressed = true;
+        if (!IsometricControls.controlling() || IllusionWalking.busy()) {
+            finePressedAt = 0;
+            return;
+        }
+        if (pressed && finePressedAt == 0) {
+            finePressedAt = now;
+            fineMoved = false;
+        }
+        if (finePressedAt != 0 && !FINE_ROTATION.isDown()) {
+            if (!fineMoved && now - finePressedAt <= 200_000_000L) resetView();
+            finePressedAt = 0;
+        }
+    }
+
+    static void slideRotation(double fraction, boolean aligned) {
+        if (IllusionWalking.busy()) return;
+        long now = System.nanoTime();
+        double target = 45 + 360 * fraction;
+        if (aligned) {
+            target = 45 + 90 * Math.round((target - 45) / 90);
+            ROTATION.rotateTo(target, now);
+        } else {
+            double current = ROTATION.sample(now);
+            yaw = (float) ROTATION.moveImmediately(net.minecraft.util.Mth.wrapDegrees(target - current), now);
+        }
+    }
+
+    static double rotationFraction() {
+        double turns = (yaw - 45) / 360;
+        return turns - Math.floor(turns);
+    }
+
+    static double zoomFraction() { return (64 - span) / 56; }
+    static void slideZoom(double fraction) { setZoom(64 - 56 * fraction); }
+    static void resetZoom() { setZoom(ClientConfig.DEFAULT_SPAN.get()); }
+    static void scrollZoom(double amount) {
+        ZOOM.adjust(-amount * ClientConfig.ZOOM_STEP.get(), System.nanoTime());
+    }
+
+    private static void setZoom(double target) {
+        ZOOM.adjust(target - ZOOM.manualTarget(), System.nanoTime());
+    }
+
+    static void toggleAutoZoom() {
+        ClientConfig.AUTO_ZOOM_UNDER_COVER.set(!ClientConfig.AUTO_ZOOM_UNDER_COVER.get());
+        ClientConfig.SPEC.save();
     }
 
     static void toggleCutaway() {
@@ -129,7 +179,8 @@ public final class CameraController {
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, mc.player)).getType() == HitResult.Type.BLOCK;
     }
     private static void drain() {
-        for (KeyMapping key : new KeyMapping[]{TOGGLE, LEFT, RIGHT, IN, OUT, FINE_ROTATION})
+        finePressedAt = 0;
+        for (KeyMapping key : new KeyMapping[]{TOGGLE, FINE_ROTATION})
             while (key.consumeClick()) { }
     }
 }
