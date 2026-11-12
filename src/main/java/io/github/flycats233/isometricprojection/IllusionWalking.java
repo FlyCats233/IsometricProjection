@@ -5,10 +5,9 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
-import net.minecraft.server.level.ServerPlayer;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
@@ -16,19 +15,20 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 public final class IllusionWalking {
     private static volatile boolean enabled;
     private static volatile long generation;
-    private static Pending pending;
-    private static int pendingTicks;
+    private static final Deque<Pending> pending = new ArrayDeque<>();
+    private static Prediction teleportPrediction;
     private static int cooldown;
     private static BlockPos lastSource;
     private static BlockPos lastTarget;
     private static Vec3 lastMotion = Vec3.ZERO;
     private static int reverseGuard;
-    private record Pending(long id, LocalPlayer player, ClientLevel level, Vec3 from, Vec3 to, Vec3 velocity,
-            BlockPos source, BlockPos target) { }
+    private record Pending(long id, LocalPlayer player, ClientLevel level, Vec3 from, Vec3 to, long sentAt) { }
+    private record Prediction(Vec3 position, Vec3 velocity, double xo, double yo, double zo,
+            double xOld, double yOld, double zOld, float yaw, float pitch, boolean grounded, float fallDistance) {}
 
     private IllusionWalking() { }
     public static boolean enabled() { return enabled; }
-    public static boolean busy() { return pending != null; }
+    public static boolean busy() { return !pending.isEmpty(); }
 
     public static void toggle() {
         Minecraft mc = Minecraft.getInstance();
@@ -48,8 +48,9 @@ public final class IllusionWalking {
         if (!enabled) return;
         enabled = false;
         generation++;
-        rollback(pending);
-        pending = null;
+        rollback(pending.peekFirst());
+        pending.clear();
+        teleportPrediction = null;
         lastSource = lastTarget = null;
         reverseGuard = 0;
         LocalCutaway.setEnabled(ClientConfig.CUTAWAY_ENABLED.get());
@@ -65,10 +66,11 @@ public final class IllusionWalking {
         if (enabled && (!CameraController.active() || !serverSupported())) disable();
         if (cooldown > 0) cooldown--;
         if (reverseGuard > 0) reverseGuard--;
-        if (pending != null && ++pendingTicks > 40) {
+        if (!pending.isEmpty() && mc.level.getGameTime() - pending.peekFirst().sentAt > 40) {
             generation++;
-            rollback(pending);
-            pending = null;
+            rollback(pending.peekFirst());
+            pending.clear();
+            teleportPrediction = null;
             cooldown = 10;
             message("illusion_failed");
         }
@@ -79,12 +81,6 @@ public final class IllusionWalking {
         Minecraft mc = Minecraft.getInstance();
         if (!enabled || !IsometricControls.controlling() || !serverSupported()) return false;
         LocalPlayer player = mc.player;
-        if (pending != null) {
-            // No drift/fall while waiting for the authoritative packet; momentum resumes at acknowledgement.
-            player.setDeltaMovement(Vec3.ZERO);
-            player.setOnGround(true);
-            return true;
-        }
         double length = movement.horizontalDistance();
         if (cooldown > 0 || length < 1.0E-5 || player.input.jumping || player.input.forwardImpulse <= 0
                 || CameraController.isRotating()
@@ -110,7 +106,7 @@ public final class IllusionWalking {
                 AABB landing = player.getBoundingBox().move(to.subtract(player.position()));
                 if (!mc.level.noCollision(player, landing) || !IllusionVisibility.seamVisible(player, support, target,
                         crossing.stepX(), crossing.stepZ(), CameraController.yaw(), player.getEyePosition())) continue;
-                transfer(support, target, to, landing);
+                transfer(support, target, to);
                 return true;
             }
         }
@@ -141,25 +137,27 @@ public final class IllusionWalking {
         return level.getBlockState(pos).isCollisionShapeFullBlock(level, pos);
     }
 
-    private static void transfer(BlockPos support, BlockPos target, Vec3 to, AABB landing) {
+    private static void transfer(BlockPos support, BlockPos target, Vec3 to) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         Vec3 from = player.position();
         float drag = mc.level.getBlockState(support).getFriction(mc.level, support, player) * .91F;
         Vec3 velocity = player.getDeltaMovement().multiply(drag, 0, drag);
-        float yaw = player.getYRot(), pitch = player.getXRot();
-        var uuid = player.getUUID();
-        var dimension = player.level().dimension();
+
+
         long id = ++generation;
-        Pending request = new Pending(id, player, mc.level, from, to, velocity, support, target);
-        pending = request;
-        pendingTicks = 0;
+        Pending request = new Pending(id, player, mc.level, from, to, mc.level.getGameTime());
+        pending.addLast(request);
         // The major position change is parallel to the camera ray, so it does not shift the scene sideways.
         player.setPos(to);
-        player.setOldPosAndRot();
+        var shift = IllusionMath.alignedShift(CameraController.yaw(), CameraController.PITCH, target.getY() - support.getY());
+        player.xo += shift.x(); player.yo += shift.y(); player.zo += shift.z();
+        player.xOld += shift.x(); player.yOld += shift.y(); player.zOld += shift.z();
+        shiftCloak(player, new Vec3(shift.x(), shift.y(), shift.z()));
         player.resetFallDistance();
         player.setOnGround(true);
-        player.setDeltaMovement(Vec3.ZERO);
+        player.setDeltaMovement(velocity);
+        lastSource = support; lastTarget = target; lastMotion = velocity; reverseGuard = 4;
         mc.getConnection().send(new IllusionNetwork.Request(id, support, target, from, to, velocity, CameraController.yaw()));
     }
 
@@ -170,40 +168,66 @@ public final class IllusionWalking {
     }
 
     public static void onResult(IllusionNetwork.Result result) {
-        Pending request = pending;
+        Pending request = pending.peekFirst();
         if (request != null && request.id == result.id() && !result.accepted()) {
             rollback(request);
-            pending = null;
+            pending.clear();
+            teleportPrediction = null;
             cooldown = 10;
             message("illusion_failed");
         }
     }
 
-    public static void onTeleportApplied() {
-        Minecraft mc = Minecraft.getInstance();
-        Pending request = pending;
-        if (request != null && mc.player == request.player && mc.level == request.level
-                && mc.player.position().distanceToSqr(request.to) < .01) {
-            mc.player.setOldPosAndRot();
-            mc.player.setDeltaMovement(request.velocity);
-            mc.player.setOnGround(true);
-            mc.player.resetFallDistance();
-            lastSource = request.source;
-            lastTarget = request.target;
-            lastMotion = request.velocity;
-            reverseGuard = 4;
-            pending = null;
-            cooldown = 0;
+    public static void beforeTeleport(double x, double y, double z, boolean absolute) {
+        teleportPrediction = null;
+        var mc = Minecraft.getInstance();
+        Pending request = pending.peekFirst();
+        if (request == null) return;
+        if (!absolute || mc.player != request.player || mc.level != request.level
+                || request.to.distanceToSqr(new Vec3(x, y, z)) >= .01) {
+            pending.clear();
+            return;
         }
+        var player = mc.player;
+        teleportPrediction = new Prediction(player.position(), player.getDeltaMovement(), player.xo, player.yo, player.zo,
+                player.xOld, player.yOld, player.zOld, player.getYRot(), player.getXRot(), player.onGround(), player.fallDistance);
     }
 
+    public static void onTeleportApplied() {
+        Prediction prediction = teleportPrediction;
+        teleportPrediction = null;
+        if (prediction == null || pending.isEmpty()) return;
+        Pending request = pending.removeFirst();
+        var mc = Minecraft.getInstance();
+        if (mc.player != request.player || mc.level != request.level) return;
+        var player = mc.player;
+        player.setPos(prediction.position);
+        player.xo = prediction.xo; player.yo = prediction.yo; player.zo = prediction.zo;
+        player.xOld = prediction.xOld; player.yOld = prediction.yOld; player.zOld = prediction.zOld;
+        player.setYRot(prediction.yaw); player.setXRot(prediction.pitch);
+        player.setDeltaMovement(prediction.velocity);
+        player.setOnGround(prediction.grounded);
+        player.fallDistance = prediction.fallDistance;
+        cooldown = 0;
+    }
     private static void rollback(Pending request) {
         if (request == null) return;
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == request.player && mc.level == request.level && mc.player.position().distanceToSqr(request.to) < 4) {
+        if (mc.player == request.player && mc.level == request.level) {
+            shiftCloak(mc.player, request.from.subtract(mc.player.position()));
             mc.player.setPos(request.from);
             mc.player.setOldPosAndRot();
             mc.player.setDeltaMovement(Vec3.ZERO);
         }
+    }
+
+    private static void shiftCloak(LocalPlayer player, Vec3 shift) {
+        // Preserve the cape's lag relative to the player across the teleport offset.
+        player.xCloak += shift.x;
+        player.yCloak += shift.y;
+        player.zCloak += shift.z;
+        player.xCloakO += shift.x;
+        player.yCloakO += shift.y;
+        player.zCloakO += shift.z;
     }
 }

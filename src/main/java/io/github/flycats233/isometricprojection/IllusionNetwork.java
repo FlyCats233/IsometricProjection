@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.*;
@@ -35,7 +34,7 @@ public final class IllusionNetwork {
     }
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        var registrar = event.registrar("1").optional();
+        var registrar = event.registrar("2").optional();
         registrar.playToServer(Request.TYPE, Request.CODEC, (p,c) -> c.enqueueWork(() -> {
             ServerPlayer player = (ServerPlayer)c.player();
             boolean accepted = validate(player, p);
@@ -43,7 +42,6 @@ public final class IllusionNetwork {
                 player.connection.teleport(p.to.x, p.to.y, p.to.z, player.getYRot(), player.getXRot());
                 player.setDeltaMovement(p.velocity);
                 player.resetFallDistance(); player.setOnGround(true);
-                player.connection.send(new ClientboundSetEntityMotionPacket(player));
             } else {
                 // Correct any client-side prediction before reporting rejection.
                 player.connection.teleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());

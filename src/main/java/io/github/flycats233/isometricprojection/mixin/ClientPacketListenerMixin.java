@@ -10,6 +10,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPacketListener.class)
 public abstract class ClientPacketListenerMixin {
+    @Inject(method = "handleMovePlayer", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/player/Player;getDeltaMovement()Lnet/minecraft/world/phys/Vec3;"))
+    private void isometricprojection$captureCrossing(ClientboundPlayerPositionPacket packet, CallbackInfo ci) {
+        IllusionWalking.beforeTeleport(packet.getX(), packet.getY(), packet.getZ(), packet.getRelativeArguments().isEmpty());
+    }
+
     @Inject(method = "handleMovePlayer", at = @At("RETURN"))
     private void isometricprojection$confirmCrossing(ClientboundPlayerPositionPacket packet, CallbackInfo ci) {
         IllusionWalking.onTeleportApplied();

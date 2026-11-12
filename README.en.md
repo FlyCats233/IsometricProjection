@@ -4,7 +4,7 @@
 
 Inspired by the game *Monument Valley*, **Isometric Projection** aims to bring gameplay centered on optical illusions to Minecraft. Rotate the isometric view until two separated block tops appear to share an edge, then walk across the apparent connection. Use these connections to build paths and puzzles that depend on your viewing angle.
 
-The current release, **0.7.0**, supports **Minecraft 1.21.1 on NeoForge 21.1.265**.
+The current release, **0.7.1**, supports **Minecraft 1.21.1 on NeoForge 21.1.265**.
 
 ## Installation
 
