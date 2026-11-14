@@ -13,7 +13,7 @@ public final class ClientConfig {
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
         VIEW_TRANSITION = b.translation("config.isometricprojection.viewTransition").define("viewTransition", true);
-        CUTAWAY_ENABLED = b.translation("config.isometricprojection.cutawayEnabled").comment("Default/persisted cutaway preference. Illusion connections temporarily disable it.").define("cutawayEnabled", true);
+        CUTAWAY_ENABLED = b.translation("config.isometricprojection.cutawayEnabled").comment("Default/persisted cutaway preference. Illusion connections temporarily disable it.").define("cutawayEnabled", false);
         CUTAWAY_RADIUS = b.translation("config.isometricprojection.cutawayRadius").comment("Opening radius in projected world units.").defineInRange("cutawayRadius", 4D, 1D, 12D);
         CUTAWAY_DEPTH = b.translation("config.isometricprojection.cutawayDepth").comment("Maximum opening depth towards the camera, in blocks.").defineInRange("cutawayDepth", 32D, 4D, 32D);
         DEFAULT_SPAN = b.translation("config.isometricprojection.defaultSpan").comment("Default vertical visible world size. Applied when configuration is loaded/saved.").defineInRange("defaultSpan", 24D, 8D, 64D);

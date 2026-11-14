@@ -44,7 +44,6 @@ final class IllusionVisibility {
         if (!level.isClientSide() && !level.hasChunksAt(BlockPos.containing(start), BlockPos.containing(point))) {
             return false;
         }
-        return level.clip(new ClipContext(start, point, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player))
-                .getType() == HitResult.Type.MISS;
+        return OcclusionRule.visible(player, start, point);
     }
 }

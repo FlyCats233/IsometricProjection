@@ -47,13 +47,18 @@ public final class IllusionWalking {
     private static void disable() {
         if (!enabled) return;
         enabled = false;
+        cancelTransfers();
+        LocalCutaway.setEnabled(ClientConfig.CUTAWAY_ENABLED.get());
+    }
+
+    private static void cancelTransfers() {
         generation++;
         rollback(pending.peekFirst());
         pending.clear();
         teleportPrediction = null;
         lastSource = lastTarget = null;
         reverseGuard = 0;
-        LocalCutaway.setEnabled(ClientConfig.CUTAWAY_ENABLED.get());
+        cooldown = 0;
     }
 
     private static void message(String key) {
@@ -63,7 +68,10 @@ public final class IllusionWalking {
 
     public static void tick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
-        if (enabled && (!CameraController.active() || !serverSupported())) disable();
+        if (enabled && !serverSupported()) disable();
+        // Leaving the view suspends traversal without changing the user's switch.
+        if (!CameraController.active() && (!pending.isEmpty() || teleportPrediction != null || lastSource != null))
+            cancelTransfers();
         if (cooldown > 0) cooldown--;
         if (reverseGuard > 0) reverseGuard--;
         if (!pending.isEmpty() && mc.level.getGameTime() - pending.peekFirst().sentAt > 40) {

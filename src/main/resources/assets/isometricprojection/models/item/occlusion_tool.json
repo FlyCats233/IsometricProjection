@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "isometricprojection:item/occlusion_tool"
+  },
+  "overrides": [
+    {
+      "predicate": { "isometricprojection:selected": 1 },
+      "model": "isometricprojection:item/occlusion_tool_selected"
+    }
+  ]
+}

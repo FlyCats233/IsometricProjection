@@ -11,7 +11,97 @@ public final class ControlMathCheck {
         if (!Double.isFinite(actual) || Math.abs(expected - actual) > 1.0E-5) throw new AssertionError(expected + " != " + actual);
     }
 
+    private static void checkReverseOcclusion() {
+        var a = net.minecraft.core.BlockPos.ZERO;
+        var b = a.offset(4, 3, -3);
+        var c = b.offset(4, 3, -3);
+        var up = net.minecraft.core.Direction.UP;
+        var side = net.minecraft.core.Direction.EAST;
+        var data = new OcclusionData();
+        if (!data.add(a, up, b, up) || !data.add(b, up, c, up))
+            throw new AssertionError("Non-conflicting chain rejected");
+        var before = data.save(new net.minecraft.nbt.CompoundTag(), null);
+        data.setDirty(false);
+        if (!data.hasReverse(b, a) || data.add(b, side, a, side))
+            throw new AssertionError("Reverse relation accepted with different clicked faces");
+        if (!before.equals(data.save(new net.minecraft.nbt.CompoundTag(), null)) || data.isDirty())
+            throw new AssertionError("Rejected reverse changed existing rules or consumed an ID");
+        near(2, data.rules().size());
+        if (!data.add(a, side, b, side)) throw new AssertionError("Same direction update rejected");
+        near(2, data.rules().size());
+
+        var legacy = new OcclusionData();
+        legacy.add(a, up, b, up);
+        var tag = legacy.save(new net.minecraft.nbt.CompoundTag(), null);
+        var entries = tag.getList("rules", net.minecraft.nbt.Tag.TAG_COMPOUND);
+        var reverse = entries.getCompound(0).copy();
+        reverse.putLong("id", 2);
+        reverse.putLong("a", b.asLong());
+        reverse.putLong("b", a.asLong());
+        entries.add(reverse);
+        tag.putLong("next_id", 20);
+        var loaded = OcclusionData.load(tag, null);
+        near(1, loaded.rules().size());
+        if (!loaded.rules().getFirst().hidden().equals(a) || !loaded.rules().getFirst().covering().equals(b)
+                || !loaded.isDirty()) throw new AssertionError("Legacy reverse cleanup did not preserve first rule");
+        var roundtrip = OcclusionData.load(loaded.save(new net.minecraft.nbt.CompoundTag(), null), null);
+        if (!roundtrip.rules().equals(loaded.rules()) || roundtrip.isDirty())
+            throw new AssertionError("Cleaned rules did not survive save and reload");
+        if (!roundtrip.add(b, up, c, up)) throw new AssertionError("Independent relation rejected after migration");
+        near(20, roundtrip.rules().getLast().id());
+        if (!data.remove(a, up) || !data.add(b, up, a, up))
+            throw new AssertionError("Cannot reverse after removing the old relation");
+        near(1, data.rules().size());
+    }
+
     public static void main(String[] args) {
+        var facePos = net.minecraft.core.BlockPos.ZERO;
+        var face = net.minecraft.core.Direction.SOUTH;
+        var rayStart = new net.minecraft.world.phys.Vec3(.5, .5, 3);
+        var rayEnd = new net.minecraft.world.phys.Vec3(.5, .5, -3);
+        var faceHit = OcclusionRule.intersect(facePos, face, rayStart, rayEnd);
+        if (faceHit == null) throw new AssertionError("Missing authored face intersection");
+        near(1, faceHit.z);
+        if (OcclusionRule.intersect(facePos, face, rayEnd, rayStart) != null)
+            throw new AssertionError("Back-facing authored side was selected");
+        if (OcclusionRule.intersect(facePos, face, rayStart.add(1, 0, 0), rayEnd.add(1, 0, 0)) != null)
+            throw new AssertionError("Authored side extends beyond block bounds");
+        OcclusionData savedRules = new OcclusionData();
+        for (double yaw : new double[]{45, 135, 225, 315}) {
+            for (int rise : new int[]{-32, -16, -3, 1, 16, 32}) {
+                var shift = IllusionMath.alignedShift(yaw, 35.26439, rise);
+                var aligned = facePos.offset(shift.x(), rise, shift.z());
+                if (OcclusionRule.hasTopSeam(facePos, aligned))
+                    throw new AssertionError("Coincident tops are not an edge seam");
+                for (var side : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                    if (!OcclusionRule.hasTopSeam(facePos, aligned.relative(side))
+                            || !OcclusionRule.hasTopSeam(aligned.relative(side), facePos))
+                        throw new AssertionError("Valid top seam rejected: " + yaw + "/" + rise);
+                    checks++;
+                }
+            }
+        }
+        if (savedRules.add(facePos, face, facePos.offset(3, 3, -3), face)
+                || savedRules.add(facePos, face, facePos.offset(1, 0, 0), face)
+                || savedRules.add(facePos, face, facePos.offset(8, 3, -3), face))
+            throw new AssertionError("Non-seam pair accepted");
+        var facePairs = OcclusionRule.visibleFacePairs(new net.minecraft.world.phys.Vec3(1, 1, -1));
+        near(9, facePairs.size());
+        if (!facePairs.contains(new OcclusionRule.FacePair(net.minecraft.core.Direction.NORTH,
+                net.minecraft.core.Direction.EAST))) throw new AssertionError("Cross-direction side overlap missing");
+        if (!facePairs.contains(new OcclusionRule.FacePair(net.minecraft.core.Direction.EAST,
+                net.minecraft.core.Direction.UP)) || !facePairs.contains(new OcclusionRule.FacePair(
+                net.minecraft.core.Direction.UP, net.minecraft.core.Direction.NORTH)))
+            throw new AssertionError("Top/side overlap missing");
+        savedRules.add(facePos, face, facePos.offset(4, 3, -3), net.minecraft.core.Direction.UP);
+        var restoredRules = OcclusionData.load(savedRules.save(new net.minecraft.nbt.CompoundTag(), null), null);
+        near(1, restoredRules.rules().size());
+        if (!restoredRules.rules().equals(savedRules.rules())) throw new AssertionError("Occlusion save roundtrip");
+        restoredRules.add(facePos, net.minecraft.core.Direction.EAST, facePos.offset(5, 4, -4), face);
+        near(1, restoredRules.rules().size());
+        if (!restoredRules.remove(facePos.offset(5, 4, -4), face)) throw new AssertionError("Covering face cannot remove its rule");
+        near(0, restoredRules.rules().size());
+        checkReverseOcclusion();
         ViewTransition transition = new ViewTransition();
         transition.retarget(true, true, 0);
         near(.5, transition.sample(200_000_000));

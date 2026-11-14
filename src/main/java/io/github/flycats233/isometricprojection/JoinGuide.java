@@ -32,7 +32,7 @@ public final class JoinGuide {
         pending = false;
         if (!ClientConfig.SHOW_GUIDE.get()) return;
         mc.gui.getChat().addMessage(Component.translatable("message.isometricprojection.guide_controls",
-                key("toggle"), key("fine_rotation"))
+                key("toggle"))
                 .withStyle(ChatFormatting.GOLD));
         mc.gui.getChat().addMessage(Component.translatable("message.isometricprojection.guide_movement",
                 Component.keybind(mc.options.keyUp.getName()), Component.keybind(mc.options.keyLeft.getName()),

@@ -27,6 +27,13 @@ final class PonderCommand {
                     }
                     PenrosePonder.open();
                     return 1;
-                })));
+                }).then(Commands.literal("occlusion").executes(context -> {
+                    if (!available()) {
+                        context.getSource().sendFailure(Component.translatable("message.isometricprojection.ponder_missing"));
+                        return 0;
+                    }
+                    PenrosePonder.openEditor();
+                    return 1;
+                }))));
     }
 }

@@ -16,6 +16,18 @@ public final class IsometricProjection {
         container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
         container.registerExtensionPoint(IConfigScreenFactory.class, IsometricProjection::settingsScreen);
         modBus.addListener(ClientConfig::changed);
+        modBus.addListener(OcclusionToolAppearance::setup);
+        modBus.addListener(OcclusionRenderer::shaders);
+        modBus.addListener(OcclusionActors::shaders);
+        NeoForge.EVENT_BUS.addListener(OcclusionActors::tick);
+        NeoForge.EVENT_BUS.addListener(OcclusionActors::logout);
+        OcclusionNetwork.receiver = ClientOcclusion::receive;
+        OcclusionNetwork.clientRules = ClientOcclusion::rules;
+        ModItems.serverItemsAvailable = ClientOcclusion::serverSupported;
+        NeoForge.EVENT_BUS.addListener(ClientOcclusion::logout);
+        NeoForge.EVENT_BUS.addListener(OcclusionRenderer::logout);
+        NeoForge.EVENT_BUS.addListener(OcclusionRenderer::render);
+        NeoForge.EVENT_BUS.addListener(ToolRelationOverlay::hud);
         IllusionNetwork.clientReceiver = IllusionWalking::onResult;
         modBus.addListener(CameraController::registerKeys);
         NeoForge.EVENT_BUS.addListener(CameraController::tick);

@@ -14,7 +14,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 public final class LocalCutaway {
-    private static boolean enabled = true;
+    private static boolean enabled;
     private static volatile CutawayVolume current = CutawayVolume.DISABLED;
     private static final ThreadLocal<CutawayVolume> COMPILING = new ThreadLocal<>();
     private static ClientLevel lastLevel;

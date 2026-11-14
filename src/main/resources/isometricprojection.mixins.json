@@ -3,7 +3,37 @@
   "package": "io.github.flycats233.isometricprojection.mixin",
   "plugin": "io.github.flycats233.isometricprojection.mixin.IsometricMixinPlugin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["CrossbowAimMixin"],
-  "client": ["CameraMixin", "GameRendererMixin", "LevelRendererMixin", "FrustumMixin", "MouseHandlerMixin", "SectionCompilerMixin", "RenderChunkRegionMixin", "BlockEntityRenderDispatcherMixin", "ClientPacketListenerMixin", "IllusionMovementMixin", "FlywheelShaderSourcesMixin", "SodiumChunkRendererMixin", "SodiumLevelSliceMixin", "AimedItemUseMixin", "CreateGlueSelectionMixin", "CreateChainSelectionMixin"],
-  "injectors": { "defaultRequire": 1 }
+  "mixins": [
+    "CrossbowAimMixin"
+  ],
+  "client": [
+    "CameraMixin",
+    "GameRendererMixin",
+    "LevelRendererMixin",
+    "FrustumMixin",
+    "MouseHandlerMixin",
+    "SectionCompilerMixin",
+    "RenderChunkRegionMixin",
+    "BlockEntityRenderDispatcherMixin",
+    "ClientPacketListenerMixin",
+    "IllusionMovementMixin",
+    "FlywheelShaderSourcesMixin",
+    "ReimaginedReloadMixin",
+    "ReimaginedSourceMixin",
+    "ReimaginedUniformMixin",
+    "SodiumTerrainSourceMixin",
+    "SodiumTerrainUniformMixin",
+    "SodiumChunkRendererMixin",
+    "SodiumBatchMixin",
+    "SodiumRegionBatchMixin",
+    "SodiumSectionVisibilityMixin",
+    "SodiumLevelSliceMixin",
+    "AimedItemUseMixin",
+    "CreateGlueSelectionMixin",
+    "CreateChainSelectionMixin",
+    "CreativeItemSupportMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

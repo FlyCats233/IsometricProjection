@@ -1,0 +1,2 @@
+Tool: built-in imagegen. Preview only; not a production 32x32 texture.
+Prompt specification: two matching Minecraft pixel-art connector icons, orange cube lower-left, blue cube upper-right, pale yellow arrow A -> B, dark navy outlines and transparent background. Left: filled orange + hollow blue. Right: hollow orange + filled blue. Same layout and scale in both states. No text or labels. Intended final textures: two 32x32 transparent PNGs switched by the editor's first-block selection state.

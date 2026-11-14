@@ -141,7 +141,8 @@ public final class IsometricControls {
         Vec3 entityEnd = block.getType() == HitResult.Type.MISS ? end : block.getLocation();
         EntityHitResult entity = ProjectileUtil.getEntityHitResult(mc.player, origin, entityEnd,
                 new AABB(origin, entityEnd).inflate(1), e -> !e.isSpectator() && e.isPickable(), blockDistance);
-        HitResult pointed = entity == null ? block : entity;
+        BlockHitResult visualBlock = OcclusionRule.resolve(mc.level, ClientOcclusion.rules(), origin, end, block);
+        HitResult pointed = entity == null ? visualBlock : entity;
 
         Vec3 aim = pointed.getType() == HitResult.Type.MISS
                 ? origin.add(direction.scale(CameraController.DISTANCE - .05)) : pointed.getLocation();
@@ -149,10 +150,18 @@ public final class IsometricControls {
         boolean reachable = pointed.getType() != HitResult.Type.MISS && eye.distanceToSqr(pointed.getLocation()) <= reach * reach;
         if (reachable) {
             // The screen ray must not grant interaction through a wall next to the player.
-            BlockHitResult obstruction = mc.level.clip(new ClipContext(eye, pointed.getLocation(),
-                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, mc.player));
+            ClipContext context = new ClipContext(eye, pointed.getLocation(),
+                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, mc.player) {
+                @Override public net.minecraft.world.phys.shapes.VoxelShape getBlockShape(
+                        net.minecraft.world.level.block.state.BlockState state,
+                        net.minecraft.world.level.BlockGetter level, net.minecraft.core.BlockPos pos) {
+                    return entity == null && visualBlock != block && pos.equals(block.getBlockPos())
+                            ? net.minecraft.world.phys.shapes.Shapes.empty() : super.getBlockShape(state, level, pos);
+                }
+            };
+            BlockHitResult obstruction = mc.level.clip(context);
             reachable = obstruction.getType() == HitResult.Type.MISS
-                    || (entity == null && obstruction.getBlockPos().equals(block.getBlockPos()));
+                    || (entity == null && obstruction.getBlockPos().equals(visualBlock.getBlockPos()));
         }
         mc.hitResult = reachable ? pointed : BlockHitResult.miss(aim, Direction.getNearest(direction.x, direction.y, direction.z), net.minecraft.core.BlockPos.containing(aim));
         mc.crosshairPickEntity = reachable && entity != null ? entity.getEntity() : null;
